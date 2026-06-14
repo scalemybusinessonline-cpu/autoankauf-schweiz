@@ -115,19 +115,23 @@
 
     /* ── FORM PANEL ── */
     .form-panel {
-      background: #0047A8;
+      background: #d4e6ff;
       padding: 2rem 1.75rem;
       display: flex;
       flex-direction: column;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 71, 168, 0.16), 0 2px 8px rgba(0, 71, 168, 0.08);
+      margin: 1.5rem 1.5rem 1.5rem 0;
     }
-    .form-title { font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 4px; }
-    .form-sub { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 1.5rem; }
+    .form-title { font-size: 18px; font-weight: 600; color: #0047A8; margin-bottom: 4px; }
+    .form-sub { font-size: 13px; color: #5c82b8; margin-bottom: 1.5rem; }
     .field-label {
       font-size: 11px;
       font-weight: 600;
       letter-spacing: 1px;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.5);
+      color: #0047A8;
+      opacity: 0.65;
       margin: 1rem 0 0.6rem;
     }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
@@ -138,20 +142,23 @@
     textarea,
     select {
       width: 100%;
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 6px;
+      background: #fff;
+      border: 1px solid #b8d0ee;
+      border-radius: 10px;
       padding: 9px 12px;
       font-size: 13px;
-      color: #fff;
+      color: #1a1a2e;
       font-family: inherit;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.4); }
-    input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,0.7); }
-    select { color: rgba(255,255,255,0.6); appearance: none; cursor: pointer; }
-    select option { background: #0047A8; color: #fff; }
+    input::placeholder, textarea::placeholder { color: #a0b8d8; }
+    input:focus, textarea:focus, select:focus {
+      border-color: #0047A8;
+      box-shadow: 0 0 0 3px rgba(0, 71, 168, 0.12);
+    }
+    select { color: #1a1a2e; appearance: none; cursor: pointer; }
+    select option { background: #fff; color: #1a1a2e; }
     textarea { resize: none; rows: 2; }
     .btn-submit {
       margin-top: 1.25rem;
@@ -162,7 +169,7 @@
       font-weight: 700;
       padding: 14px;
       border: none;
-      border-radius: 6px;
+      border-radius: 10px;
       cursor: pointer;
       font-family: inherit;
       letter-spacing: 0.2px;
@@ -171,7 +178,7 @@
     .btn-submit:hover { opacity: 0.88; }
     .form-note {
       font-size: 11px;
-      color: rgba(255,255,255,0.35);
+      color: #7a9ec5;
       text-align: center;
       margin-top: 10px;
       line-height: 1.5;
@@ -304,7 +311,7 @@
     @media (max-width: 768px) {
       .nav-links { display: none; }
       .hero { grid-template-columns: 1fr; }
-      .form-panel { padding: 2rem 1.25rem; }
+      .form-panel { padding: 2rem 1.25rem; margin: 1rem; }
       .ghost-number { font-size: 130px; }
       .hero h1 { font-size: 28px; }
       .stats-row { gap: 1.5rem; }

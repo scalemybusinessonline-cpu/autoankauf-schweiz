@@ -927,9 +927,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <div class="benefit-text">Wir helfen Ihnen, egal wie alt oder in welchem Zustand sich Ihr Auto befindet.</div>
       </div>
       <div class="benefit-card">
-        <div class="benefit-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="17" r="3"/><circle cx="19" cy="17" r="3"/><path d="M8 17h8M10 8h4l2 4h2a3 3 0 0 1 0 6M10 8l-2 4H5"/><path d="M14 8V5h-2"/></svg></div>
-        <div class="benefit-title">Auch Motorräder</div>
-        <div class="benefit-text">Sie besitzen ein Motorrad? Wir kaufen es — zu fairen, marktgerechten Preisen.</div>
+        <div class="benefit-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg></div>
+        <div class="benefit-title"><span id="benefitYears">24</span> Jahre Erfahrung</div>
+        <div class="benefit-text">Seit über zwei Jahrzehnten kaufen wir Fahrzeuge in der ganzen Schweiz.</div>
       </div>
       <div class="benefit-card">
         <div class="benefit-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
@@ -1028,11 +1028,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <script>
     (function () {
-      var el = document.getElementById('experienceYears');
-      if (!el) return;
       var GRUENDUNGSJAHR = 2002; // Basis für die automatisch hochzählende Erfahrung
       var years = new Date().getFullYear() - GRUENDUNGSJAHR;
-      el.textContent = years + ' J.';
+
+      var statEl = document.getElementById('experienceYears');
+      if (statEl) statEl.textContent = years + ' J.';
+
+      var benefitEl = document.getElementById('benefitYears');
+      if (benefitEl) benefitEl.textContent = years;
     })();
 
     (function () {

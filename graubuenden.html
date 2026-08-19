@@ -750,7 +750,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <div class="stat-label">Zufriedene Kunden</div>
           </div>
           <div>
-            <div class="stat-val">20 J.</div>
+            <div class="stat-val" id="experienceYears">24 J.</div>
             <div class="stat-label">Erfahrung</div>
           </div>
         </div>
@@ -1020,6 +1020,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </footer>
 
   <script>
+    (function () {
+      var el = document.getElementById('experienceYears');
+      if (!el) return;
+      var GRUENDUNGSJAHR = 2002; // Basis für die automatisch hochzählende Erfahrung
+      var years = new Date().getFullYear() - GRUENDUNGSJAHR;
+      el.textContent = years + ' J.';
+    })();
+
     (function () {
       var toggle = document.getElementById('navToggle');
       var links = document.getElementById('navLinks');

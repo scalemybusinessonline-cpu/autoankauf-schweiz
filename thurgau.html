@@ -635,7 +635,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         scrollbar-width: none;
       }
       .canton-marquee::-webkit-scrollbar { display: none; }
-      .canton-tags { gap: 1.25rem; animation: none; }
+      .canton-tags { gap: 1.25rem; }
+      .canton-marquee.touched .canton-tags { animation-play-state: paused; }
 
       .form-panel {
         order: 2;
@@ -1180,6 +1181,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           form.reset();
         });
       }
+    })();
+
+    (function () {
+      var video = document.querySelector('.hero-bg-video');
+      if (video) video.playbackRate = 0.5;
+    })();
+
+    (function () {
+      var marquee = document.querySelector('.canton-marquee');
+      if (!marquee) return;
+      marquee.addEventListener('touchstart', function () {
+        marquee.classList.add('touched');
+      }, { passive: true, once: true });
     })();
 
     (function () {

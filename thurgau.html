@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       cursor: pointer;
     }
     .nav-cta {
-      background: #0047A8;
+      background: #60A5FA;
       color: #fff;
       font-size: 13px;
       font-weight: 600;
@@ -265,16 +265,59 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     }
     select { color: #12233f; appearance: none; cursor: pointer; }
     select option { background: #fff; color: #1a1a2e; }
-    textarea { resize: none; rows: 2; }
+    textarea { resize: none; height: 72px; }
     .file-upload {
       display: flex;
       align-items: center;
-      color: #4f6a92;
+      justify-content: center;
+      gap: 8px;
+      background: #60A5FA;
+      border-color: #60A5FA;
+      color: #fff;
+      font-weight: 600;
       cursor: pointer;
     }
-    .file-upload:hover { background: rgba(255, 255, 255, 0.7); }
+    .file-upload:hover { background: #4B93F5; border-color: #4B93F5; }
     .file-upload input[type="file"] { display: none; }
-    .file-upload.has-file { color: #12233f; }
+    .file-upload.has-file { background: #12233f; border-color: #12233f; color: #fff; }
+    .hp-field {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      opacity: 0;
+    }
+    .form-success {
+      display: none;
+      color: #1a7a3c;
+      background: rgba(26, 122, 60, 0.1);
+      border: 1px solid rgba(26, 122, 60, 0.3);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 10px;
+      text-align: center;
+    }
+    .form-error-banner {
+      display: none;
+      color: #D32F2F;
+      background: rgba(211, 47, 47, 0.1);
+      border: 1px solid rgba(211, 47, 47, 0.3);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 10px;
+      text-align: center;
+    }
+    .field-invalid {
+      border-color: #D32F2F !important;
+      background: rgba(211, 47, 47, 0.08) !important;
+    }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
     .expand-hint {
       font-size: 12px;
       color: rgba(255, 255, 255, 0.8);
@@ -288,8 +331,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       margin-top: 0;
       transition: max-height 0.55s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease 0.05s, margin-top 0.55s ease;
     }
-    .form-panel:focus-within .expand-hint { display: none; }
-    .form-panel:focus-within .form-expand { max-height: 900px; opacity: 1; margin-top: 0.5rem; }
+    .form-panel:focus-within .expand-hint,
+    .form-panel.is-expanded .expand-hint { display: none; }
+    .form-panel:focus-within .form-expand,
+    .form-panel.is-expanded .form-expand { max-height: 900px; opacity: 1; margin-top: 0.5rem; }
     @media (hover: hover) and (pointer: fine) {
       .form-panel:hover .expand-hint { display: none; }
       .form-panel:hover .form-expand { max-height: 900px; opacity: 1; margin-top: 0.5rem; }
@@ -732,14 +777,35 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="form-badge">Antwort &lt; 2 Std.</span>
       </div>
 
-      <form action="#" method="POST" id="offerForm">
+      <form action="https://script.google.com/macros/s/AKfycbxnOeWjoHunSxaz13rdtQfp-GmGphvuf5TfSYy5aDntM3MTzCorzxBfpMso0mocpCOV/exec" method="POST" id="offerForm" target="hidden_iframe" novalidate>
+        <input type="hidden" name="kanton" value="Thurgau">
+        <input type="hidden" name="utm_source" value="">
+        <input type="hidden" name="utm_medium" value="">
+        <input type="hidden" name="utm_campaign" value="">
+        <input type="hidden" name="utm_term" value="">
+        <input type="hidden" name="gclid" value="">
+        <input type="hidden" name="fbid" value="">
+        <div class="hp-field" aria-hidden="true">
+          <label for="hpcheck34x">Bitte leer lassen</label>
+          <input type="text" id="hpcheck34x" name="hpcheck34x" tabindex="-1" autocomplete="off" readonly>
+        </div>
         <div class="row">
-          <input type="text" name="name" placeholder="Name" aria-label="Name" required>
-          <input type="text" name="ort" placeholder="PLZ / Ort" aria-label="PLZ / Ort" required>
+          <input type="text" name="vorname" placeholder="Vorname" aria-label="Vorname" required>
+          <input type="text" name="nachname" placeholder="Nachname" aria-label="Nachname" required>
         </div>
         <p class="expand-hint">Weiter mit Kontakt &amp; Fahrzeugdetails →</p>
 
         <div class="form-expand">
+          <div class="row full">
+            <input type="text" name="firma" placeholder="Firma (optional)" aria-label="Firma (optional)">
+          </div>
+          <div class="row full">
+            <input type="text" name="strasse" placeholder="Straße &amp; Nr." aria-label="Straße &amp; Nr." required>
+          </div>
+          <div class="row">
+            <input type="text" name="plz" placeholder="PLZ" aria-label="PLZ" required>
+            <input type="text" name="ort" placeholder="Ort" aria-label="Ort" required>
+          </div>
           <div class="row">
             <input type="email" name="email" placeholder="E-Mail" aria-label="E-Mail" required>
             <input type="tel" name="telefon" placeholder="Telefon" aria-label="Telefon" required>
@@ -755,6 +821,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <input type="text" name="km" placeholder="Kilometerstand" aria-label="Kilometerstand">
           </div>
           <div class="row">
+            <input type="text" name="farbe" placeholder="Farbe" aria-label="Farbe">
+            <input type="text" name="preisvorstellung" placeholder="Preisvorstellung" aria-label="Preisvorstellung (CHF)">
+          </div>
+          <div class="row full">
             <select name="typ" aria-label="Fahrzeugtyp">
               <option value="" disabled selected>Fahrzeugtyp wählen</option>
               <option>Limousine</option>
@@ -762,20 +832,25 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               <option>SUV / Geländewagen</option>
               <option>Cabrio</option>
               <option>Van / Minibus</option>
-              <option>Motorrad</option>
             </select>
+          </div>
+          <div class="row full">
+            <textarea name="bemerkungen" placeholder="Bemerkungen (optional)" aria-label="Bemerkungen" rows="2"></textarea>
+          </div>
+          <div class="row full">
             <label class="file-upload" id="fileUploadLabel">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               <span id="fileUploadText">Bilder auswählen</span>
               <input type="file" name="bilder" accept="image/*" multiple aria-label="Bilder auswählen">
             </label>
           </div>
-          <div class="row full">
-            <input type="text" name="bemerkungen" placeholder="Bemerkungen (optional)" aria-label="Bemerkungen">
-          </div>
 
           <button type="submit" class="btn-submit">Offerte kostenlos anfordern →</button>
+          <p class="form-success">Danke! Wir melden uns in Kürze mit deiner Offerte.</p>
+          <p class="form-error-banner">Bitte fülle alle Pflichtfelder korrekt aus.</p>
         </div>
       </form>
+      <iframe name="hidden_iframe" id="hiddenSubmitFrame" style="display:none;"></iframe>
     </div>
     </div>
   </section>
@@ -975,6 +1050,122 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           label.classList.add('has-file');
         }
       });
+    })();
+
+    (function () {
+      var form = document.getElementById('offerForm');
+      if (!form) return;
+
+      // Formular bleibt dauerhaft aufgeklappt, sobald einmal reingeklickt/getippt wurde —
+      // verhindert, dass es beim Verlassen von Maus-Hover/Fokus (z.B. Tab-Wechsel, Mobile) wieder zuklappt
+      var formPanel = document.getElementById('formPanel');
+      if (formPanel) {
+        var expandPanel = function () { formPanel.classList.add('is-expanded'); };
+        form.addEventListener('focusin', expandPanel);
+        form.addEventListener('click', expandPanel);
+        form.addEventListener('touchstart', expandPanel, { passive: true });
+      }
+
+      // UTM- & Ad-Klick-Parameter aus der URL in die versteckten Felder übernehmen
+      var qs = new URLSearchParams(window.location.search);
+      var utmMap = { utm_source: 'utm_source', utm_medium: 'utm_medium', utm_campaign: 'utm_campaign', utm_term: 'utm_term', gclid: 'gclid', fbclid: 'fbid' };
+      Object.keys(utmMap).forEach(function (param) {
+        var value = qs.get(param);
+        if (!value) return;
+        var field = form.querySelector('input[name="' + utmMap[param] + '"]');
+        if (field) field.value = value;
+      });
+
+      var loadTime = Date.now();
+      var MIN_FILL_MS = 2500; // Formulare, die schneller abgeschickt werden, stammen fast immer von Bots
+      var iframe = document.getElementById('hiddenSubmitFrame');
+      var submitBtn = form.querySelector('.btn-submit');
+      var successEl = form.querySelector('.form-success');
+      var errorBannerEl = form.querySelector('.form-error-banner');
+      var errorBannerDefaultText = errorBannerEl ? errorBannerEl.textContent : '';
+      var fileInput = form.querySelector('input[name="bilder"]');
+      var formExpand = form.querySelector('.form-expand');
+      var submitting = false;
+
+      // Rote Markierung verschwindet, sobald das Feld korrigiert wird
+      Array.prototype.forEach.call(form.querySelectorAll('[required]'), function (field) {
+        field.addEventListener('input', function () { field.classList.remove('field-invalid'); });
+        field.addEventListener('change', function () { field.classList.remove('field-invalid'); });
+      });
+
+      form.addEventListener('submit', function (e) {
+        if (successEl) successEl.style.display = 'none';
+        if (errorBannerEl) errorBannerEl.style.display = 'none';
+        Array.prototype.forEach.call(form.querySelectorAll('.field-invalid'), function (field) {
+          field.classList.remove('field-invalid');
+        });
+
+        // Pflichtfelder prüfen, fehlende/ungültige sichtbar markieren
+        var invalidFields = Array.prototype.filter.call(form.querySelectorAll('[required]'), function (field) {
+          return !field.checkValidity();
+        });
+
+        if (invalidFields.length > 0) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (formExpand) {
+            formExpand.style.maxHeight = '900px';
+            formExpand.style.opacity = '1';
+            formExpand.style.marginTop = '0.5rem';
+          }
+          invalidFields.forEach(function (field) { field.classList.add('field-invalid'); });
+          if (errorBannerEl) {
+            errorBannerEl.textContent = errorBannerDefaultText;
+            errorBannerEl.style.display = 'block';
+          }
+          invalidFields[0].focus();
+          return false;
+        }
+
+        // Honeypot bleibt bewusst lautlos (kein Hinweis an Bots)
+        var honeypot = form.querySelector('input[name="hpcheck34x"]');
+        if (honeypot && honeypot.value.trim() !== '') {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+
+        // Zeit-Trick: hier zeigen wir einen Hinweis, falls z.B. Autofill das Formular
+        // in Sekundenbruchteilen befüllt hat und ein echter Nutzer sofort absendet
+        var filledTooFast = (Date.now() - loadTime) < MIN_FILL_MS;
+        if (filledTooFast) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (errorBannerEl) {
+            errorBannerEl.textContent = 'Bitte kurz warten und nochmal auf Senden klicken.';
+            errorBannerEl.style.display = 'block';
+          }
+          return false;
+        }
+
+        // Bilder werden aktuell nicht ans Sheet übertragen — Feld beim Senden ausschliessen
+        if (fileInput) fileInput.disabled = true;
+
+        submitting = true;
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Wird gesendet …';
+        }
+      });
+
+      if (iframe) {
+        iframe.addEventListener('load', function () {
+          if (!submitting) return; // ersten Load beim Seitenaufbau ignorieren
+          submitting = false;
+          if (fileInput) fileInput.disabled = false;
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Offerte kostenlos anfordern →';
+          }
+          if (successEl) successEl.style.display = 'block';
+          form.reset();
+        });
+      }
     })();
 
     (function () {

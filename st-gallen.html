@@ -629,7 +629,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       .google-reviews .gr-stars { font-size: 11px; }
       .google-reviews .gr-stars-bg { color: rgba(255, 255, 255, 0.3); }
       .google-reviews .gr-count { font-size: 11px; color: rgba(255, 255, 255, 0.75); }
-      .canton-tags { gap: 1.25rem; animation-duration: 24s; }
+      .canton-marquee {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .canton-marquee::-webkit-scrollbar { display: none; }
+      .canton-tags { gap: 1.25rem; animation: none; }
 
       .form-panel {
         order: 2;

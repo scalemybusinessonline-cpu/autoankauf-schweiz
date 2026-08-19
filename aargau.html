@@ -339,6 +339,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       .form-panel:hover .expand-hint { display: none; }
       .form-panel:hover .form-expand { max-height: 900px; opacity: 1; margin-top: 0.5rem; }
     }
+    @media (min-width: 769px) {
+      .form-panel .expand-hint { display: none; }
+      .form-panel .form-expand { max-height: 900px; opacity: 1; margin-top: 0.5rem; }
+    }
     .btn-submit {
       margin-top: 1.25rem;
       width: 100%;
@@ -792,6 +796,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <input type="hidden" name="utm_term" value="">
         <input type="hidden" name="gclid" value="">
         <input type="hidden" name="fbid" value="">
+        <input type="hidden" name="bilder_data" value="">
         <div class="hp-field" aria-hidden="true">
           <label for="hpcheck34x">Bitte leer lassen</label>
           <input type="text" id="hpcheck34x" name="hpcheck34x" tabindex="-1" autocomplete="off" readonly>
@@ -803,10 +808,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <p class="expand-hint">Weiter mit Kontakt &amp; Fahrzeugdetails →</p>
 
         <div class="form-expand">
-          <div class="row full">
+          <div class="row">
             <input type="text" name="firma" placeholder="Firma (optional)" aria-label="Firma (optional)">
-          </div>
-          <div class="row full">
             <input type="text" name="strasse" placeholder="Straße &amp; Nr." aria-label="Straße &amp; Nr." required>
           </div>
           <div class="row">
@@ -814,32 +817,36 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <input type="text" name="ort" placeholder="Ort" aria-label="Ort" required>
           </div>
           <div class="row">
-            <input type="email" name="email" placeholder="E-Mail" aria-label="E-Mail" required>
-            <input type="tel" name="telefon" placeholder="Telefon" aria-label="Telefon" required>
+            <input type="email" name="email" placeholder="E-Mail *" aria-label="E-Mail (Pflichtfeld)" required>
+            <input type="tel" name="telefon" placeholder="Telefon *" aria-label="Telefon (Pflichtfeld)" required>
           </div>
 
           <div class="field-label">Fahrzeug</div>
           <div class="row">
-            <input type="text" name="marke" placeholder="Marke" aria-label="Marke" required>
-            <input type="text" name="modell" placeholder="Modell" aria-label="Modell" required>
+            <input type="text" name="marke" placeholder="Automarke *" aria-label="Automarke (Pflichtfeld)" required>
+            <input type="text" name="modell" placeholder="Typ *" aria-label="Typ (Pflichtfeld)" required>
           </div>
           <div class="row">
-            <input type="text" name="jahrgang" placeholder="Erstzulassung" aria-label="Erstzulassung">
+            <select name="typ" aria-label="Fahrzeugart">
+              <option value="" disabled selected>Fahrzeugart wählen</option>
+              <option>Cabrio/Roadster</option>
+              <option>Geländewagen/Pickup</option>
+              <option>Kombi</option>
+              <option>Kompakt</option>
+              <option>Limousine</option>
+              <option>Sportwagen/Coupé</option>
+              <option>Van/Kleinbus</option>
+              <option>Andere</option>
+            </select>
+            <input type="text" name="typenscheinnummer" placeholder="Typenscheinnr. *" aria-label="Typenscheinnummer (Pflichtfeld)" required>
+          </div>
+          <div class="row">
+            <input type="text" name="jahrgang" placeholder="Inverkehrssetzung *" aria-label="Erste Inverkehrssetzung (Pflichtfeld)" required>
             <input type="text" name="km" placeholder="Kilometerstand" aria-label="Kilometerstand">
           </div>
           <div class="row">
             <input type="text" name="farbe" placeholder="Farbe" aria-label="Farbe">
-            <input type="text" name="preisvorstellung" placeholder="Preisvorstellung" aria-label="Preisvorstellung (CHF)">
-          </div>
-          <div class="row full">
-            <select name="typ" aria-label="Fahrzeugtyp">
-              <option value="" disabled selected>Fahrzeugtyp wählen</option>
-              <option>Limousine</option>
-              <option>Kombi</option>
-              <option>SUV / Geländewagen</option>
-              <option>Cabrio</option>
-              <option>Van / Minibus</option>
-            </select>
+            <input type="text" name="preisvorstellung" placeholder="Preisvorstellung *" aria-label="Preisvorstellung (CHF, Pflichtfeld)" required>
           </div>
           <div class="row full">
             <textarea name="bemerkungen" placeholder="Bemerkungen (optional)" aria-label="Bemerkungen" rows="2"></textarea>
@@ -847,13 +854,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <div class="row full">
             <label class="file-upload" id="fileUploadLabel">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <span id="fileUploadText">Bilder auswählen</span>
+              <span id="fileUploadText">Bilder auswählen (mehrere möglich)</span>
               <input type="file" name="bilder" accept="image/*" multiple aria-label="Bilder auswählen">
             </label>
           </div>
 
           <button type="submit" class="btn-submit">Offerte kostenlos anfordern →</button>
-          <p class="form-success">Danke! Wir melden uns in Kürze mit deiner Offerte.</p>
+          <p class="form-success">Danke! Wir melden uns in Kürze zurück.</p>
           <p class="form-error-banner">Bitte fülle alle Pflichtfelder korrekt aus.</p>
         </div>
       </form>
@@ -1061,7 +1068,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       input.addEventListener('change', function () {
         var count = input.files.length;
         if (count === 0) {
-          text.textContent = 'Bilder auswählen';
+          text.textContent = 'Bilder auswählen (mehrere möglich)';
           label.classList.remove('has-file');
         } else {
           text.textContent = count === 1 ? '1 Bild ausgewählt' : count + ' Bilder ausgewählt';
@@ -1161,14 +1168,57 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           return false;
         }
 
-        // Bilder werden aktuell nicht ans Sheet übertragen — Feld beim Senden ausschliessen
-        if (fileInput) fileInput.disabled = true;
+        // Ab hier läuft alles asynchron (Bilder einlesen), daher hier abfangen
+        // und die Seite am Ende selbst per form.submit() abschicken.
+        e.preventDefault();
+        e.stopPropagation();
 
         submitting = true;
         if (submitBtn) {
           submitBtn.disabled = true;
           submitBtn.textContent = 'Wird gesendet …';
         }
+
+        var files = (fileInput && fileInput.files) ? Array.prototype.slice.call(fileInput.files) : [];
+        var MAX_TOTAL_BYTES = 15 * 1024 * 1024; // ~15 MB Rohgrösse, Gmail-Anhanglimit im Blick behalten
+        var totalBytes = files.reduce(function (sum, f) { return sum + f.size; }, 0);
+
+        if (totalBytes > MAX_TOTAL_BYTES) {
+          submitting = false;
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Offerte kostenlos anfordern →';
+          }
+          if (errorBannerEl) {
+            errorBannerEl.textContent = 'Die Bilder sind zusammen zu gross (max. 15 MB). Bitte weniger oder kleinere Bilder auswählen.';
+            errorBannerEl.style.display = 'block';
+          }
+          return false;
+        }
+
+        var readFileAsDataURL = function (file) {
+          return new Promise(function (resolve) {
+            var reader = new FileReader();
+            reader.onload = function () { resolve({ name: file.name, type: file.type, data: reader.result }); };
+            reader.onerror = function () { resolve(null); }; // einzelnes fehlerhaftes Bild soll den Rest nicht blockieren
+            reader.readAsDataURL(file);
+          });
+        };
+
+        Promise.all(files.map(readFileAsDataURL)).then(function (results) {
+          var bilderDataField = form.querySelector('input[name="bilder_data"]');
+          var payload = results
+            .filter(function (r) { return r !== null; })
+            .map(function (r) {
+              return { name: r.name, type: r.type, data: r.data.split(',')[1] || '' };
+            });
+          if (bilderDataField) bilderDataField.value = JSON.stringify(payload);
+
+          // Rohe Datei-Auswahl nicht zusätzlich mitsenden — Inhalt steckt jetzt in bilder_data
+          if (fileInput) fileInput.disabled = true;
+
+          form.submit();
+        });
       });
 
       if (iframe) {
@@ -1182,6 +1232,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           }
           if (successEl) successEl.style.display = 'block';
           form.reset();
+
+          var uploadLabel = document.getElementById('fileUploadLabel');
+          var uploadText = document.getElementById('fileUploadText');
+          if (uploadLabel) uploadLabel.classList.remove('has-file');
+          if (uploadText) uploadText.textContent = 'Bilder auswählen (mehrere möglich)';
         });
       }
     })();

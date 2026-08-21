@@ -1,4 +1,9 @@
 # Nicht öffentlich ausliefern (assets.directory ist "." — sonst wäre alles im Repo-Root live abrufbar)
+.git/
+.wrangler/
+.dev.vars*
+.env*
+node_modules/
 apps-script/
 generate_kanton_pages.py
 wrangler.jsonc

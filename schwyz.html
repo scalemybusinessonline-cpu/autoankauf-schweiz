@@ -112,6 +112,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       object-fit: cover;
       object-position: center 85%;
       z-index: 0;
+      pointer-events: none; /* rein dekorativ — darf nie Taps/Klicks abfangen (z.B. Bewertungs-Badge auf Mobile) */
     }
     .hero-frame::before {
       content: "";
@@ -355,10 +356,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       .form-panel:hover .expand-hint { display: none; }
       .form-panel:hover .form-expand { max-height: 900px; opacity: 1; margin-top: 0.5rem; }
     }
-    @media (min-width: 769px) {
-      .form-panel .expand-hint { display: none; }
-      .form-panel .form-expand { max-height: 900px; opacity: 1; margin-top: 0.5rem; }
-    }
+    .form-panel .expand-hint { display: none; }
+    .form-panel .form-expand { max-height: 900px; opacity: 1; margin-top: 0.5rem; }
     .btn-submit {
       margin-top: 1.25rem;
       width: 100%;
@@ -676,12 +675,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       .form-panel input[type="text"],
       .form-panel input[type="email"],
       .form-panel input[type="tel"],
+      .form-panel textarea,
       .form-panel select {
         background: rgba(0, 71, 168, 0.06);
         border-color: rgba(0, 71, 168, 0.18);
         color: #12233f;
       }
-      .form-panel input::placeholder { color: #7288ab; }
+      .form-panel input::placeholder,
+      .form-panel textarea::placeholder { color: #7288ab; }
+      .file-upload {
+        flex-direction: column;
+        gap: 4px;
+        padding: 12px;
+        text-align: center;
+      }
       .benefits { padding: 2.75rem 0 2.75rem 1.25rem; }
       .reviews { padding: 2.75rem 0 2.75rem 1.25rem; }
       .section-head { margin-bottom: 1.5rem; padding: 0 1.25rem; }
@@ -726,7 +733,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       .footer-bottom .footer-kantone,
       .footer-bottom .footer-links { justify-self: center; }
       .footer-links { justify-content: center; align-items: center; text-align: center; }
-      .row { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 480px) {
@@ -777,6 +783,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     .cookie-btn-reject { background: rgba(255, 255, 255, 0.6); color: #0047A8; border-color: rgba(0, 71, 168, 0.3); }
     .cookie-btn-reject:hover { background: rgba(255, 255, 255, 0.85); }
     .cookie-btn-settings { background: transparent; color: #1e4d8f; text-decoration: underline; padding: 0.65rem 0.4rem; }
+
+    @media (max-width: 640px) {
+      .cookie-actions { flex-direction: column; align-items: stretch; width: 100%; }
+      .cookie-actions .cookie-btn { width: 100%; text-align: center; white-space: normal; }
+      .cookie-actions .cookie-btn-accept { order: -1; }
+      .cookie-actions .cookie-btn-reject { order: 0; }
+      .cookie-actions .cookie-btn-settings { order: 1; }
+    }
 
     .cookie-modal-overlay {
       position: fixed; inset: 0;

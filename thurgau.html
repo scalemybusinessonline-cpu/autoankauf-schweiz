@@ -9,8 +9,24 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap"></noscript>
-  
-  
+
+
+  <!-- Google Consent Mode v2 — Default: alles abgelehnt, bis der Nutzer im Cookie-Banner entscheidet -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('consent', 'default', {
+      'ad_storage': 'denied',
+      'ad_user_data': 'denied',
+      'ad_personalization': 'denied',
+      'analytics_storage': 'denied',
+      'functionality_storage': 'denied',
+      'personalization_storage': 'denied',
+      'security_storage': 'granted',
+      'wait_for_update': 500
+    });
+  </script>
+
   <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -719,6 +735,98 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       .reviews { padding: 3rem 1.25rem; }
       .cantons { padding: 1rem 1.25rem; }
     }
+
+    /* ── COOKIE-BANNER (Glas-Design wie .form-panel) ── */
+    .cookie-banner {
+      position: fixed;
+      left: 1.25rem; right: 1.25rem; bottom: 1.25rem;
+      z-index: 1000;
+      max-width: 640px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.42));
+      backdrop-filter: blur(22px) saturate(160%);
+      -webkit-backdrop-filter: blur(22px) saturate(160%);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 16px;
+      box-shadow: 0 12px 34px rgba(0, 10, 40, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      padding: 1.25rem 1.5rem;
+      display: none;
+    }
+    .cookie-banner.is-visible { display: block; }
+    .cookie-banner-inner {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .cookie-text { flex: 1 1 320px; font-size: 13.5px; line-height: 1.6; color: #1a1a2e; }
+    .cookie-text a { color: #0047A8; text-decoration: underline; }
+    .cookie-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .cookie-btn {
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      padding: 0.65rem 1.1rem;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .cookie-btn-accept { background: #0047A8; color: #fff; }
+    .cookie-btn-accept:hover { opacity: 0.9; }
+    .cookie-btn-reject { background: rgba(255, 255, 255, 0.6); color: #0047A8; border-color: rgba(0, 71, 168, 0.3); }
+    .cookie-btn-reject:hover { background: rgba(255, 255, 255, 0.85); }
+    .cookie-btn-settings { background: transparent; color: #1e4d8f; text-decoration: underline; padding: 0.65rem 0.4rem; }
+
+    .cookie-modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(15,20,35,0.5);
+      z-index: 1100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .cookie-modal-overlay.is-visible { display: flex; }
+    .cookie-modal {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.48));
+      backdrop-filter: blur(22px) saturate(160%);
+      -webkit-backdrop-filter: blur(22px) saturate(160%);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 16px;
+      box-shadow: 0 12px 34px rgba(0, 10, 40, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      max-width: 480px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 1.75rem;
+    }
+    .cookie-modal h2 { font-size: 1.15rem; color: #0047A8; margin-bottom: 0.5rem; }
+    .cookie-modal > p { font-size: 13.5px; color: #555; line-height: 1.6; margin-bottom: 1.25rem; }
+    .cookie-category { border-top: 1px solid #eef1f7; padding: 0.9rem 0; }
+    .cookie-category-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .cookie-category-title { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+    .cookie-category-text { font-size: 12.5px; color: #666; line-height: 1.5; margin-top: 0.3rem; }
+
+    .cookie-switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+    .cookie-switch input { opacity: 0; width: 0; height: 0; }
+    .cookie-switch-track {
+      position: absolute; inset: 0; background: #c7cede; border-radius: 999px;
+      transition: background 0.15s;
+    }
+    .cookie-switch-track::before {
+      content: ""; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px;
+      background: #fff; border-radius: 50%; transition: transform 0.15s;
+    }
+    .cookie-switch input:checked + .cookie-switch-track { background: #0047A8; }
+    .cookie-switch input:checked + .cookie-switch-track::before { transform: translateX(18px); }
+    .cookie-switch input:disabled + .cookie-switch-track { background: #a9c1e6; cursor: not-allowed; }
+
+    .cookie-modal-actions { display: flex; gap: 0.6rem; margin-top: 1.5rem; flex-wrap: wrap; }
+    .cookie-modal-actions .cookie-btn { flex: 1 1 auto; }
+
+    .footer-cookie-link { cursor: pointer; background: none; border: none; padding: 0; font: inherit; color: inherit; }
+    .footer-cookie-link:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -728,7 +836,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <button type="button" class="nav-toggle" id="navToggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="navLinks">
       <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
-    <div class="logo">Auto<span>Ankauf</span>·Schweiz</div>
+    <a class="logo" href="index.html">Auto<span>Ankauf</span>·Schweiz</a>
     <div class="nav-links" id="navLinks">
       <a href="#vorteile">Vorteile</a>
       <a href="#bewertungen">Bewertungen</a>
@@ -772,12 +880,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <path fill="#4CAF50" d="M24,44c5.5,0,10.4-2.1,14.1-5.6l-6.5-5.5C29.5,34.9,26.9,36,24,36c-5.2,0-9.6-3.3-11.3-8l-6.5,5C9.5,39.6,16.2,44,24,44z"/>
             <path fill="#1976D2" d="M43.6,20.5H42V20H24v8h11.3c-0.8,2.3-2.3,4.3-4.2,5.9l6.5,5.5C39.9,36.6,44,30.9,44,24C44,22.7,43.9,21.6,43.6,20.5z"/>
           </svg>
-          <span class="gr-rating">4,7</span>
-          <span class="gr-stars" style="--rating: 4.7" aria-hidden="true">
+          <span class="gr-rating">4,8</span>
+          <span class="gr-stars" style="--rating: 4.8" aria-hidden="true">
             <span class="gr-stars-bg">★★★★★</span>
             <span class="gr-stars-fg">★★★★★</span>
           </span>
-          <span class="gr-count">Bewertungen (79)</span>
+          <span class="gr-count">Bewertungen (80)</span>
         </a>
       </div>
     </div>
@@ -785,11 +893,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <div class="form-panel" id="formPanel">
       <div class="form-title-row">
         <div class="form-title">Gratisofferte anfordern</div>
-        <span class="form-badge">Antwort &lt; 2 Std.</span>
       </div>
 
       <form action="https://script.google.com/macros/s/AKfycbxnOeWjoHunSxaz13rdtQfp-GmGphvuf5TfSYy5aDntM3MTzCorzxBfpMso0mocpCOV/exec" method="POST" id="offerForm" target="hidden_iframe" novalidate>
-        <input type="hidden" name="kanton" value="Thurgau">
+        <input type="hidden" name="kanton" value="Startseite">
         <input type="hidden" name="utm_source" value="">
         <input type="hidden" name="utm_medium" value="">
         <input type="hidden" name="utm_campaign" value="">
@@ -801,9 +908,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <label for="hpcheck34x">Bitte leer lassen</label>
           <input type="text" id="hpcheck34x" name="hpcheck34x" tabindex="-1" autocomplete="off" readonly>
         </div>
-        <div class="row">
-          <input type="text" name="vorname" placeholder="Vorname" aria-label="Vorname" required>
-          <input type="text" name="nachname" placeholder="Nachname" aria-label="Nachname" required>
+        <div class="row full">
+          <input type="text" name="name" placeholder="Name / Vorname" aria-label="Name / Vorname" required>
         </div>
         <p class="expand-hint">Weiter mit Kontakt &amp; Fahrzeugdetails →</p>
 
@@ -812,9 +918,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <input type="text" name="firma" placeholder="Firma (optional)" aria-label="Firma (optional)">
             <input type="text" name="strasse" placeholder="Straße &amp; Nr." aria-label="Straße &amp; Nr." required>
           </div>
-          <div class="row">
-            <input type="text" name="plz" placeholder="PLZ" aria-label="PLZ" required>
-            <input type="text" name="ort" placeholder="Ort" aria-label="Ort" required>
+          <div class="row full">
+            <input type="text" name="plz_ort" placeholder="PLZ / Ort" aria-label="PLZ / Ort" required>
           </div>
           <div class="row">
             <input type="email" name="email" placeholder="E-Mail *" aria-label="E-Mail (Pflichtfeld)" required>
@@ -888,6 +993,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <a class="canton" href="wallis.html"><img src="assets/kantone/wallis.svg" alt="" loading="lazy">Wallis</a>
         <a class="canton" href="genf.html"><img src="assets/kantone/genf.svg" alt="" loading="lazy">Genf</a>
         <a class="canton" href="waadt.html"><img src="assets/kantone/waadt.svg" alt="" loading="lazy">Waadt</a>
+        <a class="canton" href="uri.html"><img src="assets/kantone/uri.svg" alt="" loading="lazy">Uri</a>
+        <a class="canton" href="obwalden.html"><img src="assets/kantone/obwalden.svg" alt="" loading="lazy">Obwalden</a>
+        <a class="canton" href="nidwalden.html"><img src="assets/kantone/nidwalden.svg" alt="" loading="lazy">Nidwalden</a>
+        <a class="canton" href="glarus.html"><img src="assets/kantone/glarus.svg" alt="" loading="lazy">Glarus</a>
+        <a class="canton" href="freiburg.html"><img src="assets/kantone/freiburg.svg" alt="" loading="lazy">Freiburg</a>
+        <a class="canton" href="schaffhausen.html"><img src="assets/kantone/schaffhausen.svg" alt="" loading="lazy">Schaffhausen</a>
+        <a class="canton" href="appenzell-ausserrhoden.html"><img src="assets/kantone/appenzell-ausserrhoden.svg" alt="" loading="lazy">Appenzell Ausserrhoden</a>
+        <a class="canton" href="appenzell-innerrhoden.html"><img src="assets/kantone/appenzell-innerrhoden.svg" alt="" loading="lazy">Appenzell Innerrhoden</a>
+        <a class="canton" href="tessin.html"><img src="assets/kantone/tessin.svg" alt="" loading="lazy">Tessin</a>
+        <a class="canton" href="neuenburg.html"><img src="assets/kantone/neuenburg.svg" alt="" loading="lazy">Neuenburg</a>
+        <a class="canton" href="jura.html"><img src="assets/kantone/jura.svg" alt="" loading="lazy">Jura</a>
         <a class="canton" href="zuerich.html" aria-hidden="true" tabindex="-1"><img src="assets/kantone/zuerich.svg" alt="" loading="lazy">Zürich</a>
         <a class="canton" href="bern.html" aria-hidden="true" tabindex="-1"><img src="assets/kantone/bern.svg" alt="" loading="lazy">Bern</a>
         <a class="canton" href="luzern.html" aria-hidden="true" tabindex="-1"><img src="assets/kantone/luzern.svg" alt="" loading="lazy">Luzern</a>
@@ -902,6 +1018,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <a class="canton" href="wallis.html" aria-hidden="true" tabindex="-1"><img src="assets/kantone/wallis.svg" alt="" loading="lazy">Wallis</a>
         <a class="canton" href="genf.html" aria-hidden="true" tabindex="-1"><img src="assets/kantone/genf.svg" alt="" loading="lazy">Genf</a>
         <a class="canton" href="waadt.html" aria-hidden="true" tabindex="-1"><img src="assets/kantone/waadt.svg" alt="" loading="lazy">Waadt</a>
+        <a class="canton" href="uri.html" aria-hidden="true" tabindex="-1"><img src="assets/kantone/uri.svg" alt="" loading="lazy">Uri</a>
+        <a class="canton" href="obwalden.html" aria-hidden="true" tabindex="-1"><img src="assets/kantone/obwalden.svg" alt="" loading="lazy">Obwalden</a>
+        <a class="canton" href="nidwalden.html" aria-hidden="true" tabindex="-1"><img src="assets/kantone/nidwalden.svg" alt="" loading="lazy">Nidwalden</a>
+        <a class="canton" href="glarus.html" aria-hidden="true" tabindex="-1"><img src="assets/kantone/glarus.svg" alt="" loading="lazy">Glarus</a>
+        <a class="canton" href="freiburg.html" aria-hidden="true" tabindex="-1"><img src="assets/kantone/freiburg.svg" alt="" loading="lazy">Freiburg</a>
+        <a class="canton" href="schaffhausen.html" aria-hidden="true" tabindex="-1"><img src="assets/kantone/schaffhausen.svg" alt="" loading="lazy">Schaffhausen</a>
+        <a class="canton" href="appenzell-ausserrhoden.html" aria-hidden="true" tabindex="-1"><img src="assets/kantone/appenzell-ausserrhoden.svg" alt="" loading="lazy">Appenzell Ausserrhoden</a>
+        <a class="canton" href="appenzell-innerrhoden.html" aria-hidden="true" tabindex="-1"><img src="assets/kantone/appenzell-innerrhoden.svg" alt="" loading="lazy">Appenzell Innerrhoden</a>
+        <a class="canton" href="tessin.html" aria-hidden="true" tabindex="-1"><img src="assets/kantone/tessin.svg" alt="" loading="lazy">Tessin</a>
+        <a class="canton" href="neuenburg.html" aria-hidden="true" tabindex="-1"><img src="assets/kantone/neuenburg.svg" alt="" loading="lazy">Neuenburg</a>
+        <a class="canton" href="jura.html" aria-hidden="true" tabindex="-1"><img src="assets/kantone/jura.svg" alt="" loading="lazy">Jura</a>
       </div>
     </div>
   </div>
@@ -931,7 +1058,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <div class="benefit-card">
         <div class="benefit-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17H3v-5l2-5h14l2 5v5h-2"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="17.5" r="2.5"/><path d="M5 12h14"/></svg></div>
         <div class="benefit-title">Alle Fahrzeuge</div>
-        <div class="benefit-text">Wir helfen Ihnen, egal wie alt oder in welchem Zustand sich Ihr Auto befindet.</div>
+        <div class="benefit-text">Wir helfen Ihnen, egal in welchem Zustand sich Ihr Auto befindet.</div>
       </div>
       <div class="benefit-card">
         <div class="benefit-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg></div>
@@ -1023,15 +1150,87 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <a href="wallis.html">Wallis</a>
           <a href="genf.html">Genf</a>
           <a href="waadt.html">Waadt</a>
+          <a href="uri.html">Uri</a>
+          <a href="obwalden.html">Obwalden</a>
+          <a href="nidwalden.html">Nidwalden</a>
+          <a href="glarus.html">Glarus</a>
+          <a href="freiburg.html">Freiburg</a>
+          <a href="schaffhausen.html">Schaffhausen</a>
+          <a href="appenzell-ausserrhoden.html">Appenzell Ausserrhoden</a>
+          <a href="appenzell-innerrhoden.html">Appenzell Innerrhoden</a>
+          <a href="tessin.html">Tessin</a>
+          <a href="neuenburg.html">Neuenburg</a>
+          <a href="jura.html">Jura</a>
         </div>
       </div>
       <div class="footer-links">
-        <strong>Legal</strong>
-        <a href="#">Datenschutz</a>
-        <a href="#">Impressum</a>
+        <strong>Rechtliches</strong>
+        <a href="datenschutz.html">Datenschutz</a>
+        <a href="impressum.html">Impressum</a>
+        <button type="button" class="footer-cookie-link" id="cookieSettingsLink">Cookie-Einstellungen</button>
       </div>
     </div>
   </footer>
+
+  <!-- COOKIE-BANNER -->
+  <div class="cookie-banner" id="cookieBanner" role="dialog" aria-live="polite" aria-label="Cookie-Hinweis">
+    <div class="cookie-banner-inner">
+      <div class="cookie-text">
+        Wir verwenden Cookies, um unsere Website nutzerfreundlich zu gestalten und unser Angebot fortlaufend zu verbessern. Einige sind technisch notwendig, andere helfen uns bei Statistik und Werbung. Details dazu finden Sie in unserer <a href="datenschutz.html">Datenschutzerklärung</a>.
+      </div>
+      <div class="cookie-actions">
+        <button type="button" class="cookie-btn cookie-btn-settings" id="cookieOpenSettings">Einstellungen</button>
+        <button type="button" class="cookie-btn cookie-btn-reject" id="cookieRejectAll">Ablehnen</button>
+        <button type="button" class="cookie-btn cookie-btn-accept" id="cookieAcceptAll">Alle akzeptieren</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COOKIE-EINSTELLUNGEN MODAL -->
+  <div class="cookie-modal-overlay" id="cookieModalOverlay">
+    <div class="cookie-modal" role="dialog" aria-modal="true" aria-label="Cookie-Einstellungen">
+      <h2>Cookie-Einstellungen</h2>
+      <p>Wählen Sie, welche Cookies Sie zulassen möchten. Sie können Ihre Auswahl jederzeit über „Cookie-Einstellungen" im Footer ändern. Mehr dazu in unserer <a href="datenschutz.html">Datenschutzerklärung</a>.</p>
+
+      <div class="cookie-category">
+        <div class="cookie-category-head">
+          <div class="cookie-category-title">Notwendig</div>
+          <label class="cookie-switch">
+            <input type="checkbox" checked disabled>
+            <span class="cookie-switch-track"></span>
+          </label>
+        </div>
+        <div class="cookie-category-text">Für den Betrieb der Website erforderlich (z.B. Formular, Sicherheit). Können nicht deaktiviert werden.</div>
+      </div>
+
+      <div class="cookie-category">
+        <div class="cookie-category-head">
+          <div class="cookie-category-title">Statistik</div>
+          <label class="cookie-switch">
+            <input type="checkbox" id="cookieToggleAnalytics">
+            <span class="cookie-switch-track"></span>
+          </label>
+        </div>
+        <div class="cookie-category-text">Helfen uns zu verstehen, wie Besucher die Website nutzen (z.B. Google Analytics).</div>
+      </div>
+
+      <div class="cookie-category">
+        <div class="cookie-category-head">
+          <div class="cookie-category-title">Marketing</div>
+          <label class="cookie-switch">
+            <input type="checkbox" id="cookieToggleMarketing">
+            <span class="cookie-switch-track"></span>
+          </label>
+        </div>
+        <div class="cookie-category-text">Werden für personalisierte Werbung und Erfolgsmessung genutzt (z.B. Google Ads, Facebook-Pixel).</div>
+      </div>
+
+      <div class="cookie-modal-actions">
+        <button type="button" class="cookie-btn cookie-btn-reject" id="cookieModalRejectAll">Alle ablehnen</button>
+        <button type="button" class="cookie-btn cookie-btn-accept" id="cookieModalSave">Auswahl speichern</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     (function () {
@@ -1056,6 +1255,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         a.addEventListener('click', function () {
           links.classList.remove('open');
           toggle.setAttribute('aria-expanded', 'false');
+        });
+      });
+    })();
+
+    (function () {
+      // "Jetzt Offerte anfordern" und "Kontakt" in der Nav sollen immer ganz nach oben
+      // scrollen (zum Formular), nicht nur bis zum jeweiligen Anker
+      var scrollTargets = document.querySelectorAll('.btn-cta-strip[href="#offerte"], .nav-links a[href="#kontakt"]');
+      scrollTargets.forEach(function (el) {
+        el.addEventListener('click', function (e) {
+          e.preventDefault();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         });
       });
     })();
@@ -1180,7 +1391,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         }
 
         var files = (fileInput && fileInput.files) ? Array.prototype.slice.call(fileInput.files) : [];
-        var MAX_TOTAL_BYTES = 15 * 1024 * 1024; // ~15 MB Rohgrösse, Gmail-Anhanglimit im Blick behalten
+        var MAX_TOTAL_BYTES = 18 * 1024 * 1024; // ~18 MB Rohgrösse, Gmail-Anhanglimit im Blick behalten
         var totalBytes = files.reduce(function (sum, f) { return sum + f.size; }, 0);
 
         if (totalBytes > MAX_TOTAL_BYTES) {
@@ -1190,7 +1401,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             submitBtn.textContent = 'Offerte kostenlos anfordern →';
           }
           if (errorBannerEl) {
-            errorBannerEl.textContent = 'Die Bilder sind zusammen zu gross (max. 15 MB). Bitte weniger oder kleinere Bilder auswählen.';
+            errorBannerEl.textContent = 'Die Bilder sind zusammen zu gross (max. 18 MB). Bitte weniger oder kleinere Bilder auswählen.';
             errorBannerEl.style.display = 'block';
           }
           return false;
@@ -1340,6 +1551,109 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       window.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', onScroll);
       update();
+    })();
+
+    (function () {
+      // Cookie-Banner mit Google Consent Mode v2
+      var STORAGE_KEY = 'cookieConsentV2';
+      var CONSENT_MAX_AGE_DAYS = 180;
+
+      var banner = document.getElementById('cookieBanner');
+      var modalOverlay = document.getElementById('cookieModalOverlay');
+      var toggleAnalytics = document.getElementById('cookieToggleAnalytics');
+      var toggleMarketing = document.getElementById('cookieToggleMarketing');
+
+      function applyConsent(prefs) {
+        if (typeof gtag !== 'function') return;
+        gtag('consent', 'update', {
+          'analytics_storage': prefs.analytics ? 'granted' : 'denied',
+          'ad_storage': prefs.marketing ? 'granted' : 'denied',
+          'ad_user_data': prefs.marketing ? 'granted' : 'denied',
+          'ad_personalization': prefs.marketing ? 'granted' : 'denied',
+          'functionality_storage': 'granted',
+          'personalization_storage': prefs.marketing ? 'granted' : 'denied',
+          'security_storage': 'granted'
+        });
+      }
+
+      function readStoredConsent() {
+        try {
+          var raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return null;
+          var data = JSON.parse(raw);
+          var ageDays = (Date.now() - data.ts) / (1000 * 60 * 60 * 24);
+          if (ageDays > CONSENT_MAX_AGE_DAYS) return null;
+          return data;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function storeConsent(prefs) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            analytics: !!prefs.analytics,
+            marketing: !!prefs.marketing,
+            ts: Date.now()
+          }));
+        } catch (e) { /* localStorage nicht verfügbar — Consent gilt nur für diese Sitzung */ }
+      }
+
+      function showBanner() { if (banner) banner.classList.add('is-visible'); }
+      function hideBanner() { if (banner) banner.classList.remove('is-visible'); }
+      function openModal() {
+        if (!modalOverlay) return;
+        var stored = readStoredConsent();
+        if (toggleAnalytics) toggleAnalytics.checked = stored ? stored.analytics : false;
+        if (toggleMarketing) toggleMarketing.checked = stored ? stored.marketing : false;
+        modalOverlay.classList.add('is-visible');
+      }
+      function closeModal() { if (modalOverlay) modalOverlay.classList.remove('is-visible'); }
+
+      function decide(prefs) {
+        applyConsent(prefs);
+        storeConsent(prefs);
+        hideBanner();
+        closeModal();
+      }
+
+      var existing = readStoredConsent();
+      if (existing) {
+        applyConsent(existing);
+      } else {
+        showBanner();
+      }
+
+      var acceptAllBtn = document.getElementById('cookieAcceptAll');
+      var rejectAllBtn = document.getElementById('cookieRejectAll');
+      var openSettingsBtn = document.getElementById('cookieOpenSettings');
+      var modalSaveBtn = document.getElementById('cookieModalSave');
+      var modalRejectBtn = document.getElementById('cookieModalRejectAll');
+      var footerSettingsLink = document.getElementById('cookieSettingsLink');
+
+      if (acceptAllBtn) acceptAllBtn.addEventListener('click', function () {
+        decide({ analytics: true, marketing: true });
+      });
+      if (rejectAllBtn) rejectAllBtn.addEventListener('click', function () {
+        decide({ analytics: false, marketing: false });
+      });
+      if (openSettingsBtn) openSettingsBtn.addEventListener('click', openModal);
+      if (footerSettingsLink) footerSettingsLink.addEventListener('click', function (e) {
+        e.preventDefault();
+        openModal();
+      });
+      if (modalRejectBtn) modalRejectBtn.addEventListener('click', function () {
+        decide({ analytics: false, marketing: false });
+      });
+      if (modalSaveBtn) modalSaveBtn.addEventListener('click', function () {
+        decide({
+          analytics: toggleAnalytics ? toggleAnalytics.checked : false,
+          marketing: toggleMarketing ? toggleMarketing.checked : false
+        });
+      });
+      if (modalOverlay) modalOverlay.addEventListener('click', function (e) {
+        if (e.target === modalOverlay) closeModal();
+      });
     })();
   </script>
 </body>

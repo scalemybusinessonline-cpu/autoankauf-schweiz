@@ -1,0 +1,6 @@
+# Nicht öffentlich ausliefern (assets.directory ist "." — sonst wäre alles im Repo-Root live abrufbar)
+apps-script/
+generate_kanton_pages.py
+wrangler.jsonc
+.gitignore
+.assetsignore

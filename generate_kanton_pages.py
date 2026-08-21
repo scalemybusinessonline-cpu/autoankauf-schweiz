@@ -25,6 +25,17 @@ KANTONE = [
     ("wallis", "Wallis"),
     ("genf", "Genf"),
     ("waadt", "Waadt"),
+    ("uri", "Uri"),
+    ("obwalden", "Obwalden"),
+    ("nidwalden", "Nidwalden"),
+    ("glarus", "Glarus"),
+    ("freiburg", "Freiburg"),
+    ("schaffhausen", "Schaffhausen"),
+    ("appenzell-ausserrhoden", "Appenzell Ausserrhoden"),
+    ("appenzell-innerrhoden", "Appenzell Innerrhoden"),
+    ("tessin", "Tessin"),
+    ("neuenburg", "Neuenburg"),
+    ("jura", "Jura"),
 ]
 
 TITLE_OLD = "<title>AutoAnkauf Schweiz – Auto verkaufen schnell & fair</title>"

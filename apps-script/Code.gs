@@ -14,6 +14,10 @@
  * - Google-Drive-Backup: pro Anfrage wird ein Unterordner mit den Formulardaten
  *   (als Textdatei) und allen hochgeladenen Bildern angelegt — unabhängig von
  *   Gmail/Sheet, als zusätzliche Sicherung.
+ * - E-Mail-Anhang-Limit: ab MAX_EMAIL_ATTACHMENT_BYTES (18 MB) werden Bilder
+ *   nicht mehr an die Benachrichtigungs-Mail angehängt (Gmail-Limit), sondern
+ *   nur noch der Drive-Link verschickt. Drive-Backup bekommt immer alle Bilder,
+ *   unabhängig von der Grösse.
  */
 
 // Fester Ziel-Ordner: "Anfragen autoankauf-schweiz.ch" in Google Drive
@@ -196,19 +200,36 @@ function buildDetailsText(p, nextNumber) {
     'fbid: ' + (p.fbid || '-');
 }
 
+// Ab dieser Gesamtgrösse (Rohbytes) werden Bilder nicht mehr an die Mail
+// angehängt, sondern nur noch der Drive-Link verschickt — Gmail-Anhanglimit
+// liegt bei 25 MB pro Mail, hier bewusst Sicherheitsmarge eingeplant.
+var MAX_EMAIL_ATTACHMENT_BYTES = 18 * 1024 * 1024;
+
 function sendNotificationEmail(p, nextNumber, attachments, driveFolderUrl) {
   var to = 'scale.my.business.online@gmail.com';
-  var subject = 'Neue Anfrage #' + nextNumber + ': ' + (p.name || '') + ' (' + (p.kanton || '') + ')';
+  var subject = 'AAS Neue Anfrage #' + nextNumber + ': ' + (p.name || '') + ' (' + (p.kanton || '') + ')';
+
+  var attachmentBytes = (attachments || []).reduce(function (sum, blob) {
+    return sum + blob.getBytes().length;
+  }, 0);
+  var tooBigForEmail = attachmentBytes > MAX_EMAIL_ATTACHMENT_BYTES;
+
+  var bilderZeile;
+  if (!attachments || attachments.length === 0) {
+    bilderZeile = 'Keine Bilder hochgeladen.';
+  } else if (tooBigForEmail) {
+    bilderZeile = attachments.length + ' Bild(er) — zu gross für Mail-Anhang, siehe Drive-Link unten.';
+  } else {
+    bilderZeile = attachments.length + ' Bild(er) angehängt.';
+  }
 
   var body = buildDetailsText(p, nextNumber) + '\n\n' +
     '--- Bilder ---\n' +
-    (attachments && attachments.length > 0
-      ? attachments.length + ' Bild(er) angehängt.'
-      : 'Keine Bilder hochgeladen.') +
+    bilderZeile +
     (driveFolderUrl ? '\n\n--- Drive-Sicherung ---\n' + driveFolderUrl : '');
 
   MailApp.sendEmail(to, subject, body, {
-    attachments: attachments || []
+    attachments: tooBigForEmail ? [] : (attachments || [])
   });
 }
 

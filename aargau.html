@@ -372,8 +372,29 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       font-family: inherit;
       letter-spacing: 0.2px;
       transition: opacity 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
     .btn-submit:hover { opacity: 0.88; }
+    .btn-spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      flex: none;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: btn-spin 0.7s linear infinite;
+    }
+    .btn-submit.is-loading .btn-spinner { display: inline-block; }
+    @keyframes btn-spin {
+      to { transform: rotate(360deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .btn-spinner { animation-duration: 1.4s; }
+    }
 
     /* ── CANTONS ── */
     .cantons {
@@ -978,7 +999,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             </label>
           </div>
 
-          <button type="submit" class="btn-submit">Offerte kostenlos anfordern →</button>
+          <button type="submit" class="btn-submit">
+            <span class="btn-submit-label">Offerte kostenlos anfordern →</span>
+            <span class="btn-spinner" aria-hidden="true"></span>
+          </button>
           <p class="form-success">Danke! Wir melden uns in Kürze zurück.</p>
           <p class="form-error-banner">Bitte fülle alle Pflichtfelder korrekt aus.</p>
         </div>
@@ -1330,6 +1354,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       var MIN_FILL_MS = 2500; // Formulare, die schneller abgeschickt werden, stammen fast immer von Bots
       var iframe = document.getElementById('hiddenSubmitFrame');
       var submitBtn = form.querySelector('.btn-submit');
+      var submitBtnLabel = submitBtn ? submitBtn.querySelector('.btn-submit-label') : null;
+      var submitBtnDefaultText = submitBtnLabel ? submitBtnLabel.textContent : '';
       var successEl = form.querySelector('.form-success');
       var errorBannerEl = form.querySelector('.form-error-banner');
       var errorBannerDefaultText = errorBannerEl ? errorBannerEl.textContent : '';
@@ -1401,21 +1427,27 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         submitting = true;
         if (submitBtn) {
           submitBtn.disabled = true;
-          submitBtn.textContent = 'Wird gesendet …';
+          submitBtn.classList.add('is-loading');
+          if (submitBtnLabel) submitBtnLabel.textContent = 'Wird gesendet …';
         }
 
         var files = (fileInput && fileInput.files) ? Array.prototype.slice.call(fileInput.files) : [];
-        var MAX_TOTAL_BYTES = 18 * 1024 * 1024; // ~18 MB Rohgrösse, Gmail-Anhanglimit im Blick behalten
+        // Kein Gmail-Anhang-Limit mehr hier — das entscheidet jetzt Code.gs pro Anfrage
+        // (Anhang weglassen, nur Drive-Link) ab 18 MB. Dieser Deckel ist nur ein
+        // Sicherheitsnetz gegen absurd grosse Uploads (Browser-Hänger, Apps-Script-
+        // POST-Body-Limit von ~50 MB nach Base64).
+        var MAX_TOTAL_BYTES = 30 * 1024 * 1024; // ~30 MB Rohgrösse ≈ 40 MB nach Base64
         var totalBytes = files.reduce(function (sum, f) { return sum + f.size; }, 0);
 
         if (totalBytes > MAX_TOTAL_BYTES) {
           submitting = false;
           if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Offerte kostenlos anfordern →';
+            submitBtn.classList.remove('is-loading');
+            if (submitBtnLabel) submitBtnLabel.textContent = submitBtnDefaultText;
           }
           if (errorBannerEl) {
-            errorBannerEl.textContent = 'Die Bilder sind zusammen zu gross (max. 18 MB). Bitte weniger oder kleinere Bilder auswählen.';
+            errorBannerEl.textContent = 'Die Bilder sind zusammen zu gross (max. 30 MB). Bitte weniger oder kleinere Bilder auswählen.';
             errorBannerEl.style.display = 'block';
           }
           return false;
@@ -1453,7 +1485,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           if (fileInput) fileInput.disabled = false;
           if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Offerte kostenlos anfordern →';
+            submitBtn.classList.remove('is-loading');
+            if (submitBtnLabel) submitBtnLabel.textContent = submitBtnDefaultText;
           }
           if (successEl) successEl.style.display = 'block';
           form.reset();

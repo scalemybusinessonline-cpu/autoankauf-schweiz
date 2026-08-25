@@ -262,6 +262,46 @@ function buildDetailsText(p, nextNumber) {
 // liegt bei 25 MB pro Mail, hier bewusst Sicherheitsmarge eingeplant.
 var MAX_EMAIL_ATTACHMENT_BYTES = 18 * 1024 * 1024;
 
+// Nur genutzt, wenn die vollen Bilder wegen MAX_EMAIL_ATTACHMENT_BYTES nicht
+// angehängt werden — gibt trotzdem einen kleinen visuellen Eindruck direkt in
+// der Mail, ohne die Gmail-25-MB-Grenze zu gefährden. Sind die Bilder ohnehin
+// als normaler Anhang dabei, zeigt Gmail dafür schon von sich aus Thumbnails an,
+// eine zusätzliche Inline-Vorschau würde die Bytes nur doppelt zählen.
+var MAX_INLINE_PREVIEW_BYTES = 6 * 1024 * 1024;
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+/**
+ * Bettet die ersten Bilder (bis zu einem Byte-Budget) direkt per CID ins
+ * HTML der Mail ein, klein dargestellt. Bleibt das Budget bei 0 (siehe
+ * Aufrufer), wird gar nichts eingebettet.
+ */
+function buildInlinePreview(attachments, budgetBytes) {
+  var inlineImages = {};
+  var htmlParts = [];
+  var usedBytes = 0;
+
+  (attachments || []).forEach(function (blob, i) {
+    if (usedBytes >= budgetBytes) return;
+    var type = (blob.getContentType() || '').toLowerCase();
+    if (type.indexOf('image/') !== 0) return;
+    var bytes = blob.getBytes().length;
+    if (usedBytes + bytes > budgetBytes) return;
+
+    usedBytes += bytes;
+    var cid = 'previewImg' + i;
+    inlineImages[cid] = blob;
+    htmlParts.push('<img src="cid:' + cid + '" width="150" style="margin:4px; border-radius:4px; border:1px solid #ddd;">');
+  });
+
+  return { html: htmlParts.join(''), inlineImages: inlineImages };
+}
+
 function sendNotificationEmail(p, nextNumber, attachments, driveFolderUrl) {
   var to = 'scale.my.business.online@gmail.com';
   var subject = 'AAS Neue Anfrage #' + nextNumber + ': ' + (p.name || '') + ' (' + (p.kanton || '') + ')';
@@ -285,9 +325,17 @@ function sendNotificationEmail(p, nextNumber, attachments, driveFolderUrl) {
     bilderZeile +
     (driveFolderUrl ? '\n\n--- Drive-Sicherung ---\n' + driveFolderUrl : '');
 
-  MailApp.sendEmail(to, subject, body, {
-    attachments: tooBigForEmail ? [] : (attachments || [])
-  });
+  var preview = buildInlinePreview(attachments, tooBigForEmail ? MAX_INLINE_PREVIEW_BYTES : 0);
+
+  var mailOptions = { attachments: tooBigForEmail ? [] : (attachments || []) };
+  if (preview.html) {
+    mailOptions.htmlBody = '<pre style="font-family:Arial,sans-serif;white-space:pre-wrap;margin:0;">'
+      + escapeHtml(body) + '</pre>'
+      + '<div style="margin-top:12px;">' + preview.html + '</div>';
+    mailOptions.inlineImages = preview.inlineImages;
+  }
+
+  MailApp.sendEmail(to, subject, body, mailOptions);
 }
 
 /**

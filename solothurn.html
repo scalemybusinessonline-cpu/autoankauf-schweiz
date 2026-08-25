@@ -939,7 +939,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <input type="hidden" name="gclid" value="">
         <input type="hidden" name="fbid" value="">
         <input type="hidden" name="bilder_data" value="">
-        <input type="hidden" name="bilder_ids" value="">
+        <input type="hidden" name="bilder_r2" value="">
         <div class="hp-field" aria-hidden="true">
           <label for="hpcheck34x">Bitte leer lassen</label>
           <input type="text" id="hpcheck34x" name="hpcheck34x" tabindex="-1" autocomplete="off" readonly>
@@ -1495,9 +1495,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             form.submit();
           });
         } else {
-          // Grosser Upload (>30 MB): jede Datei per Resumable-Session direkt zu
-          // Drive hochladen (umgeht das Apps-Script-POST-Limit komplett),
-          // Gesamtfortschritt dabei im Submit-Button anzeigen.
+          // Grosser Upload (>30 MB): jede Datei direkt zu Cloudflare R2 hochladen
+          // (presigned URL vom eigenen /api/presign-Worker, same-origin — kein
+          // CORS-Problem beim Anfragen der URL), Gesamtfortschritt dabei im
+          // Submit-Button anzeigen.
           var uploadedBytes = files.map(function () { return 0; });
           var updateProgress = function () {
             var sent = uploadedBytes.reduce(function (sum, b) { return sum + b; }, 0);
@@ -1506,12 +1507,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           };
 
           var createUploadSession = function (file) {
-            var url = form.action + '?action=createUploadSession'
-              + '&filename=' + encodeURIComponent(file.name)
+            var url = '/api/presign'
+              + '?filename=' + encodeURIComponent(file.name)
               + '&mimeType=' + encodeURIComponent(file.type || 'application/octet-stream');
             return fetch(url).then(function (res) { return res.json(); }).then(function (data) {
-              if (!data || !data.uploadUrl) throw new Error('Keine Upload-URL erhalten');
-              return data.uploadUrl;
+              if (!data || !data.uploadUrl || !data.downloadUrl) throw new Error('Keine Upload-URL erhalten');
+              return data;
             });
           };
 
@@ -1529,34 +1530,33 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 if (xhr.status >= 200 && xhr.status < 300) {
                   uploadedBytes[index] = file.size;
                   updateProgress();
-                  try {
-                    var body = JSON.parse(xhr.responseText);
-                    resolve({ id: body.id, name: file.name, type: file.type });
-                  } catch (err) {
-                    reject(new Error('Ungültige Antwort beim Hochladen von ' + file.name));
-                  }
+                  resolve();
                 } else {
                   reject(new Error('Hochladen fehlgeschlagen (' + file.name + ')'));
                 }
               };
               xhr.onerror = function () { reject(new Error('Netzwerkfehler beim Hochladen von ' + file.name)); };
+              // Keine zusätzlichen Header setzen — die presigned URL ist ohne
+              // mitsignierte Header ausgestellt, sonst schlägt die Signatur fehl.
               xhr.send(file);
             });
           };
 
           var uploadOne = function (file, index) {
-            return createUploadSession(file).then(function (uploadUrl) {
-              return putFileDirect(uploadUrl, file, index);
+            return createUploadSession(file).then(function (session) {
+              return putFileDirect(session.uploadUrl, file, index).then(function () {
+                return { name: file.name, type: file.type, downloadUrl: session.downloadUrl };
+              });
             });
           };
 
           if (submitBtnLabel) submitBtnLabel.textContent = 'Wird hochgeladen … 0 %';
 
           Promise.all(files.map(uploadOne)).then(function (uploaded) {
-            var bilderIdsField = form.querySelector('input[name="bilder_ids"]');
-            if (bilderIdsField) bilderIdsField.value = JSON.stringify(uploaded);
+            var bilderR2Field = form.querySelector('input[name="bilder_r2"]');
+            if (bilderR2Field) bilderR2Field.value = JSON.stringify(uploaded);
 
-            // Rohe Datei-Auswahl nicht zusätzlich mitsenden — Inhalt liegt jetzt in bilder_ids
+            // Rohe Datei-Auswahl nicht zusätzlich mitsenden — Inhalt liegt jetzt in bilder_r2
             if (fileInput) fileInput.disabled = true;
             if (submitBtnLabel) submitBtnLabel.textContent = 'Wird gesendet …';
 

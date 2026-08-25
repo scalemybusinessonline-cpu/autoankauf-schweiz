@@ -2,12 +2,20 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "autoankauf-schweiz",
   "compatibility_date": "2026-06-29",
+  "main": "worker/index.js",
   "observability": {
     "enabled": true
   },
   "assets": {
-    "directory": "."
+    "directory": ".",
+    "run_worker_first": ["/api/*"]
   },
+  "r2_buckets": [
+    {
+      "binding": "UPLOADS",
+      "bucket_name": "autoankauf-schweiz-uploads"
+    }
+  ],
   "compatibility_flags": [
     "nodejs_compat"
   ]

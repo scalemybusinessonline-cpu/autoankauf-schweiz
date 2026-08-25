@@ -5,7 +5,11 @@
 .env*
 node_modules/
 apps-script/
+worker/
 generate_kanton_pages.py
 wrangler.jsonc
+package.json
+package-lock.json
 .gitignore
 .assetsignore
+.DS_Store

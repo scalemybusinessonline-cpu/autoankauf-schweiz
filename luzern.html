@@ -939,6 +939,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <input type="hidden" name="gclid" value="">
         <input type="hidden" name="fbid" value="">
         <input type="hidden" name="bilder_data" value="">
+        <input type="hidden" name="bilder_ids" value="">
         <div class="hp-field" aria-hidden="true">
           <label for="hpcheck34x">Bitte leer lassen</label>
           <input type="text" id="hpcheck34x" name="hpcheck34x" tabindex="-1" autocomplete="off" readonly>
@@ -1432,11 +1433,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         }
 
         var files = (fileInput && fileInput.files) ? Array.prototype.slice.call(fileInput.files) : [];
-        // Kein Gmail-Anhang-Limit mehr hier — das entscheidet jetzt Code.gs pro Anfrage
-        // (Anhang weglassen, nur Drive-Link) ab 18 MB. Dieser Deckel ist nur ein
-        // Sicherheitsnetz gegen absurd grosse Uploads (Browser-Hänger, Apps-Script-
-        // POST-Body-Limit von ~50 MB nach Base64).
-        var MAX_TOTAL_BYTES = 30 * 1024 * 1024; // ~30 MB Rohgrösse ≈ 40 MB nach Base64
+        // Unter INLINE_THRESHOLD_BYTES: Bilder wie bisher als Base64 inline im
+        // Formular-POST (Apps-Script-Web-Apps haben ein POST-Body-Limit von
+        // ~50 MB, daher bleibt dieser Weg klein gehalten). Darüber (bis
+        // MAX_TOTAL_BYTES): Bilder werden direkt zu Google Drive hochgeladen
+        // (Resumable-Upload-Session, siehe Code.gs) und umgehen damit das
+        // POST-Body-Limit — nur die Drive-Datei-IDs kommen dann mit ins Formular.
+        var INLINE_THRESHOLD_BYTES = 30 * 1024 * 1024; // ~30 MB Rohgrösse ≈ 40 MB nach Base64
+        var MAX_TOTAL_BYTES = 300 * 1024 * 1024; // absolute Obergrenze pro Anfrage
         var totalBytes = files.reduce(function (sum, f) { return sum + f.size; }, 0);
 
         if (totalBytes > MAX_TOTAL_BYTES) {
@@ -1447,35 +1451,120 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             if (submitBtnLabel) submitBtnLabel.textContent = submitBtnDefaultText;
           }
           if (errorBannerEl) {
-            errorBannerEl.textContent = 'Die Bilder sind zusammen zu gross (max. 30 MB). Bitte weniger oder kleinere Bilder auswählen.';
+            errorBannerEl.textContent = 'Die Bilder sind zusammen zu gross (max. 300 MB). Bitte weniger oder kleinere Bilder auswählen.';
             errorBannerEl.style.display = 'block';
           }
           return false;
         }
 
-        var readFileAsDataURL = function (file) {
-          return new Promise(function (resolve) {
-            var reader = new FileReader();
-            reader.onload = function () { resolve({ name: file.name, type: file.type, data: reader.result }); };
-            reader.onerror = function () { resolve(null); }; // einzelnes fehlerhaftes Bild soll den Rest nicht blockieren
-            reader.readAsDataURL(file);
-          });
+        var abortSubmit = function (message) {
+          submitting = false;
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('is-loading');
+            if (submitBtnLabel) submitBtnLabel.textContent = submitBtnDefaultText;
+          }
+          if (errorBannerEl) {
+            errorBannerEl.textContent = message;
+            errorBannerEl.style.display = 'block';
+          }
         };
 
-        Promise.all(files.map(readFileAsDataURL)).then(function (results) {
-          var bilderDataField = form.querySelector('input[name="bilder_data"]');
-          var payload = results
-            .filter(function (r) { return r !== null; })
-            .map(function (r) {
-              return { name: r.name, type: r.type, data: r.data.split(',')[1] || '' };
+        if (totalBytes <= INLINE_THRESHOLD_BYTES) {
+          var readFileAsDataURL = function (file) {
+            return new Promise(function (resolve) {
+              var reader = new FileReader();
+              reader.onload = function () { resolve({ name: file.name, type: file.type, data: reader.result }); };
+              reader.onerror = function () { resolve(null); }; // einzelnes fehlerhaftes Bild soll den Rest nicht blockieren
+              reader.readAsDataURL(file);
             });
-          if (bilderDataField) bilderDataField.value = JSON.stringify(payload);
+          };
 
-          // Rohe Datei-Auswahl nicht zusätzlich mitsenden — Inhalt steckt jetzt in bilder_data
-          if (fileInput) fileInput.disabled = true;
+          Promise.all(files.map(readFileAsDataURL)).then(function (results) {
+            var bilderDataField = form.querySelector('input[name="bilder_data"]');
+            var payload = results
+              .filter(function (r) { return r !== null; })
+              .map(function (r) {
+                return { name: r.name, type: r.type, data: r.data.split(',')[1] || '' };
+              });
+            if (bilderDataField) bilderDataField.value = JSON.stringify(payload);
 
-          form.submit();
-        });
+            // Rohe Datei-Auswahl nicht zusätzlich mitsenden — Inhalt steckt jetzt in bilder_data
+            if (fileInput) fileInput.disabled = true;
+
+            form.submit();
+          });
+        } else {
+          // Grosser Upload (>30 MB): jede Datei per Resumable-Session direkt zu
+          // Drive hochladen (umgeht das Apps-Script-POST-Limit komplett),
+          // Gesamtfortschritt dabei im Submit-Button anzeigen.
+          var uploadedBytes = files.map(function () { return 0; });
+          var updateProgress = function () {
+            var sent = uploadedBytes.reduce(function (sum, b) { return sum + b; }, 0);
+            var pct = totalBytes > 0 ? Math.round((sent / totalBytes) * 100) : 0;
+            if (submitBtnLabel) submitBtnLabel.textContent = 'Wird hochgeladen … ' + pct + ' %';
+          };
+
+          var createUploadSession = function (file) {
+            var url = form.action + '?action=createUploadSession'
+              + '&filename=' + encodeURIComponent(file.name)
+              + '&mimeType=' + encodeURIComponent(file.type || 'application/octet-stream');
+            return fetch(url).then(function (res) { return res.json(); }).then(function (data) {
+              if (!data || !data.uploadUrl) throw new Error('Keine Upload-URL erhalten');
+              return data.uploadUrl;
+            });
+          };
+
+          var putFileDirect = function (uploadUrl, file, index) {
+            return new Promise(function (resolve, reject) {
+              var xhr = new XMLHttpRequest();
+              xhr.open('PUT', uploadUrl, true);
+              xhr.upload.addEventListener('progress', function (evt) {
+                if (evt.lengthComputable) {
+                  uploadedBytes[index] = evt.loaded;
+                  updateProgress();
+                }
+              });
+              xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                  uploadedBytes[index] = file.size;
+                  updateProgress();
+                  try {
+                    var body = JSON.parse(xhr.responseText);
+                    resolve({ id: body.id, name: file.name, type: file.type });
+                  } catch (err) {
+                    reject(new Error('Ungültige Antwort beim Hochladen von ' + file.name));
+                  }
+                } else {
+                  reject(new Error('Hochladen fehlgeschlagen (' + file.name + ')'));
+                }
+              };
+              xhr.onerror = function () { reject(new Error('Netzwerkfehler beim Hochladen von ' + file.name)); };
+              xhr.send(file);
+            });
+          };
+
+          var uploadOne = function (file, index) {
+            return createUploadSession(file).then(function (uploadUrl) {
+              return putFileDirect(uploadUrl, file, index);
+            });
+          };
+
+          if (submitBtnLabel) submitBtnLabel.textContent = 'Wird hochgeladen … 0 %';
+
+          Promise.all(files.map(uploadOne)).then(function (uploaded) {
+            var bilderIdsField = form.querySelector('input[name="bilder_ids"]');
+            if (bilderIdsField) bilderIdsField.value = JSON.stringify(uploaded);
+
+            // Rohe Datei-Auswahl nicht zusätzlich mitsenden — Inhalt liegt jetzt in bilder_ids
+            if (fileInput) fileInput.disabled = true;
+            if (submitBtnLabel) submitBtnLabel.textContent = 'Wird gesendet …';
+
+            form.submit();
+          }).catch(function () {
+            abortSubmit('Der Upload ist fehlgeschlagen. Bitte versuche es erneut oder wähle kleinere Bilder.');
+          });
+        }
       });
 
       if (iframe) {

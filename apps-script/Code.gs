@@ -18,6 +18,12 @@
  *   nicht mehr an die Benachrichtigungs-Mail angehängt (Gmail-Limit), sondern
  *   nur noch der Drive-Link verschickt. Drive-Backup bekommt immer alle Bilder,
  *   unabhängig von der Grösse.
+ * - Direct-to-Drive-Upload für grosse Anhänge (>30 MB gesamt): das Formular
+ *   fragt vorher per doGet (action=createUploadSession) eine Drive-Resumable-
+ *   Upload-Session an und lädt die Datei direkt vom Browser zu Google hoch —
+ *   das umgeht das ~50-MB-POST-Body-Limit von Apps-Script-Web-Apps. Nur die
+ *   resultierenden Drive-Datei-IDs kommen dann im normalen Formular-POST als
+ *   bilder_ids an (parallel zum alten bilder_data-Feld für kleine Uploads).
  */
 
 // Fester Ziel-Ordner: "Anfragen autoankauf-schweiz.ch" in Google Drive
@@ -32,6 +38,47 @@ var HEADERS = ['Lfd. Nr.', 'Zeitstempel', 'Name / Vorname', 'Firma', 'Straße & 
                'Preisvorstellung', 'Fahrzeugart', 'Bemerkungen', 'Kanton-Seite',
                'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'gclid', 'fbid', 'Drive-Ordner'];
 
+function doGet(e) {
+  var action = e.parameter.action;
+  if (action === 'createUploadSession') {
+    return createUploadSession(e.parameter.filename, e.parameter.mimeType);
+  }
+  return ContentService.createTextOutput(JSON.stringify({ error: 'unknown action' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * Erstellt eine Google-Drive-Resumable-Upload-Session im Staging-Ordner und
+ * gibt die Session-URL als JSON zurück. Der Browser lädt die Bilddatei danach
+ * per PUT direkt an diese URL hoch (an googleapis.com, nicht an dieses
+ * Apps-Script) — das umgeht das ~50-MB-Limit für normale doPost-Requests bei
+ * grossen Uploads. Wird per einfachem GET aufgerufen (kein Preflight nötig).
+ */
+function createUploadSession(filename, mimeType) {
+  var staging = getOrCreateStagingFolder();
+  var metadata = {
+    name: filename || 'upload',
+    parents: [staging.getId()]
+  };
+
+  var response = UrlFetchApp.fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id', {
+    method: 'post',
+    contentType: 'application/json; charset=UTF-8',
+    headers: {
+      Authorization: 'Bearer ' + ScriptApp.getOAuthToken(),
+      'X-Upload-Content-Type': mimeType || 'application/octet-stream'
+    },
+    payload: JSON.stringify(metadata),
+    muteHttpExceptions: true
+  });
+
+  var headers = response.getHeaders();
+  var uploadUrl = headers['Location'] || headers['location'] || '';
+
+  return ContentService.createTextOutput(JSON.stringify({ uploadUrl: uploadUrl }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
 function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   ensureHeaders(sheet);
@@ -40,8 +87,9 @@ function doPost(e) {
   var nextNumber = sheet.getLastRow();
 
   var p = e.parameter;
-  var attachments = parseImageAttachments(p.bilder_data);
-  var driveFolderUrl = saveToDrive(p, nextNumber, attachments);
+  var driveResult = saveToDrive(p, nextNumber);
+  var attachments = driveResult.attachments;
+  var driveFolderUrl = driveResult.folderUrl;
 
   var row = [
     nextNumber,
@@ -120,9 +168,17 @@ function parseImageAttachments(bilderDataJson) {
  * (als Textdatei) und allen hochgeladenen Bildern — als Sicherung unabhängig
  * von Gmail (Anhang-Limit) und dem Sheet (Zell-Zeichenlimit für Bilder).
  * Schlägt das Drive-Backup fehl, wird das geloggt, aber Sheet-Eintrag und
- * E-Mail-Versand laufen trotzdem weiter (kein harter Abbruch).
+ * E-Mail-Versand laufen trotzdem weiter (kein harter Abbruch) — die inline per
+ * Base64 mitgeschickten Bilder werden dann trotzdem noch an die E-Mail gehängt.
+ *
+ * Führt zwei Anhang-Quellen zusammen: klassische Base64-Bilder (bilder_data,
+ * für kleine Uploads) und bereits per Resumable-Session zu Drive hochgeladene
+ * Dateien (bilder_ids, für grosse Uploads > 30 MB) — letztere liegen im
+ * Staging-Ordner und werden hier in den finalen Anfrage-Ordner verschoben.
  */
-function saveToDrive(p, nextNumber, attachments) {
+function saveToDrive(p, nextNumber) {
+  var inlineBlobs = parseImageAttachments(p.bilder_data);
+
   try {
     var root = getOrCreateRootFolder();
     var datum = Utilities.formatDate(new Date(), 'Europe/Zurich', 'yyyy-MM-dd_HH-mm');
@@ -131,19 +187,69 @@ function saveToDrive(p, nextNumber, attachments) {
 
     folder.createFile('anfrage.txt', buildDetailsText(p, nextNumber), MimeType.PLAIN_TEXT);
 
-    (attachments || []).forEach(function (blob) {
+    inlineBlobs.forEach(function (blob) {
       folder.createFile(blob);
     });
 
-    return folder.getUrl();
+    var uploadedBlobs = resolveDriveUploadedAttachments(p.bilder_ids, folder);
+
+    return { folderUrl: folder.getUrl(), attachments: inlineBlobs.concat(uploadedBlobs) };
   } catch (err) {
     Logger.log('Drive-Backup fehlgeschlagen: ' + err);
-    return '';
+    return { folderUrl: '', attachments: inlineBlobs };
   }
+}
+
+/**
+ * Verschiebt Dateien, die der Browser per Resumable-Upload-Session bereits
+ * direkt zu Drive hochgeladen hat (siehe createUploadSession), aus dem
+ * Staging-Ordner in den finalen Anfrage-Ordner. Gibt sie als Blobs zurück,
+ * damit sendNotificationEmail sie wie die Base64-Bilder behandeln kann
+ * (gleiche 18-MB-Schwelle für Mail-Anhang vs. nur Drive-Link).
+ */
+function resolveDriveUploadedAttachments(bilderIdsJson, zielOrdner) {
+  if (!bilderIdsJson) return [];
+  var items;
+  try {
+    items = JSON.parse(bilderIdsJson);
+  } catch (e) {
+    return [];
+  }
+  if (!Array.isArray(items)) return [];
+
+  var staging = getOrCreateStagingFolder();
+  var blobs = [];
+  items.forEach(function (item) {
+    if (!item || !item.id) return;
+    try {
+      var file = DriveApp.getFileById(item.id);
+      zielOrdner.addFile(file);
+      staging.removeFile(file);
+      blobs.push(file.getBlob());
+    } catch (err) {
+      Logger.log('Hochgeladene Datei konnte nicht verschoben werden (' + item.id + '): ' + err);
+    }
+  });
+  return blobs;
 }
 
 function getOrCreateRootFolder() {
   return DriveApp.getFolderById(DRIVE_ROOT_FOLDER_ID);
+}
+
+/**
+ * Zwischenablage für Dateien, die der Browser per Resumable-Upload-Session
+ * direkt zu Drive hochgeladen hat, bevor das eigentliche Formular abgeschickt
+ * wurde (die Ziel-Ordner-Nummer steht erst in doPost fest). Bricht ein Nutzer
+ * nach dem Hochladen ab, bleiben Dateien hier liegen — Aufräumen (z. B. per
+ * zeitgesteuertem Trigger) ist bewusst nicht Teil dieser Version.
+ */
+function getOrCreateStagingFolder() {
+  var root = getOrCreateRootFolder();
+  var name = '_Eingehende-Uploads';
+  var existing = root.getFoldersByName(name);
+  if (existing.hasNext()) return existing.next();
+  return root.createFolder(name);
 }
 
 /**

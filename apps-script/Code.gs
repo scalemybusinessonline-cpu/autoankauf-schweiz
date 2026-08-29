@@ -350,7 +350,8 @@ function buildInlinePreview(attachments, budgetBytes) {
 }
 
 function sendNotificationEmail(p, nextNumber, attachments, driveFolderUrl) {
-  var to = 'scale.my.business.online@gmail.com';
+  // Mehrere Empfänger: MailApp.sendEmail akzeptiert eine kommagetrennte Liste
+  var to = 'scale.my.business.online@gmail.com,info@autoankauf-schweiz.ch';
   var subject = 'AAS Neue Anfrage #' + nextNumber + ': ' + (p.name || '') + ' (' + (p.kanton || '') + ')';
 
   var attachmentBytes = (attachments || []).reduce(function (sum, blob) {

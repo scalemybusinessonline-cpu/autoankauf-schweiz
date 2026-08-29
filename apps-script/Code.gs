@@ -27,6 +27,11 @@
  *   von der jeweiligen (befristet gültigen) R2-Download-URL nach.
  *   (Ein früherer Versuch, Bilder direkt zu Google Drive hochzuladen, scheiterte
  *   an fehlender CORS-Unterstützung von Googles Resumable-Upload-Endpoint.)
+ * - Benachrichtigungs-Mail nutzt jetzt immer eine HTML-Ansicht (buildDetailsHtml)
+ *   mit fett dargestellten Feld-Bezeichnern, damit Schlüssel und Wert sich
+ *   schneller unterscheiden lassen. Reihenfolge und Werte sind unverändert
+ *   identisch zur bisherigen Klartext-Mail (buildDetailsText bleibt als
+ *   Plain-Text-Fallback für Mail-Clients ohne HTML-Darstellung erhalten).
  */
 
 // Fester Ziel-Ordner: "Anfragen autoankauf-schweiz.ch" in Google Drive
@@ -257,6 +262,48 @@ function buildDetailsText(p, nextNumber) {
     'fbid: ' + (p.fbid || '-');
 }
 
+/**
+ * HTML-Variante von buildDetailsText: identische Reihenfolge und Werte,
+ * aber die Feld-Bezeichner (Schlüssel) fett dargestellt, damit sie sich in
+ * der Mail schneller vom Wert unterscheiden lassen. Werte werden nur für
+ * HTML escaped, inhaltlich nicht verändert.
+ */
+function buildDetailsHtml(p, nextNumber) {
+  function line(label, value) {
+    return '<b>' + escapeHtml(label) + ':</b> ' + escapeHtml(value || '-') + '<br>';
+  }
+  function section(title) {
+    return '<br><b>--- ' + escapeHtml(title) + ' ---</b><br>';
+  }
+
+  return '<b>Anfrage #' + nextNumber + ' — ' + escapeHtml(p.kanton || '-') + '</b><br>' +
+    section('Kontakt') +
+    line('Name / Vorname', p.name) +
+    line('Firma', p.firma) +
+    line('Straße & Nr.', p.strasse) +
+    line('PLZ / Ort', p.plz_ort) +
+    line('E-Mail', p.email) +
+    line('Telefon', p.telefon) +
+    section('Fahrzeug') +
+    line('Automarke', p.marke) +
+    line('Typ', p.modell) +
+    line('Typenscheinnummer', p.typenscheinnummer) +
+    line('Erste Inverkehrssetzung', p.jahrgang) +
+    line('Kilometerstand', p.km) +
+    line('Farbe', p.farbe) +
+    line('Preisvorstellung', p.preisvorstellung) +
+    line('Fahrzeugart', p.typ) +
+    line('Bemerkungen', p.bemerkungen) +
+    section('Herkunft') +
+    line('Kanton-Seite', p.kanton) +
+    line('utm_source', p.utm_source) +
+    line('utm_medium', p.utm_medium) +
+    line('utm_campaign', p.utm_campaign) +
+    line('utm_term', p.utm_term) +
+    line('gclid', p.gclid) +
+    line('fbid', p.fbid);
+}
+
 // Ab dieser Gesamtgrösse (Rohbytes) werden Bilder nicht mehr an die Mail
 // angehängt, sondern nur noch der Drive-Link verschickt — Gmail-Anhanglimit
 // liegt bei 25 MB pro Mail, hier bewusst Sicherheitsmarge eingeplant.
@@ -327,11 +374,15 @@ function sendNotificationEmail(p, nextNumber, attachments, driveFolderUrl) {
 
   var preview = buildInlinePreview(attachments, tooBigForEmail ? MAX_INLINE_PREVIEW_BYTES : 0);
 
-  var mailOptions = { attachments: tooBigForEmail ? [] : (attachments || []) };
+  var htmlBody = '<div style="font-family:Arial,sans-serif;">'
+    + buildDetailsHtml(p, nextNumber)
+    + '<br><b>--- Bilder ---</b><br>' + escapeHtml(bilderZeile) + '<br>'
+    + (driveFolderUrl ? '<br><b>--- Drive-Sicherung ---</b><br>' + escapeHtml(driveFolderUrl) + '<br>' : '')
+    + (preview.html ? '<div style="margin-top:12px;">' + preview.html + '</div>' : '')
+    + '</div>';
+
+  var mailOptions = { attachments: tooBigForEmail ? [] : (attachments || []), htmlBody: htmlBody };
   if (preview.html) {
-    mailOptions.htmlBody = '<pre style="font-family:Arial,sans-serif;white-space:pre-wrap;margin:0;">'
-      + escapeHtml(body) + '</pre>'
-      + '<div style="margin-top:12px;">' + preview.html + '</div>';
     mailOptions.inlineImages = preview.inlineImages;
   }
 

@@ -1,5 +1,6 @@
 # Nicht öffentlich ausliefern (assets.directory ist "." — sonst wäre alles im Repo-Root live abrufbar)
 .git/
+.claude/
 .wrangler/
 .dev.vars*
 .env*

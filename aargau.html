@@ -358,9 +358,9 @@
       z-index: 1;
     }
     .upload-slot-thumb { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-    .upload-slot.is-uploading { border-style: solid; border-color: #4073b2; }
+    .upload-slot.is-uploading { border-style: solid; border-color: #D32F2F; }
     .upload-slot.is-uploading .upload-slot-text { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.6); position: relative; z-index: 1; }
-    .upload-slot.is-done { border-style: solid; border-color: #12233f; }
+    .upload-slot.is-done { border-style: solid; border-color: #1a7a3c; }
     .upload-slot.is-done .upload-slot-remove,
     .upload-slot.is-error .upload-slot-remove { display: flex; }
     .upload-slot.is-error { border-style: solid; border-color: #D32F2F; background: rgba(211, 47, 47, 0.12); }
@@ -1493,6 +1493,21 @@
         });
       };
 
+      // Fotos sind meist klein genug, dass der Upload in einem einzigen Schub
+      // passiert — der Browser liefert dann kaum echte progress-Events (oft nur
+      // 0 % und 100 %), wodurch die Anzeige "eingefroren" wirkt. Simuliert
+      // daher zusätzlich ein stetiges Hochzählen bis knapp unter 100 %; ein
+      // echtes Event mit höherem Wert überschreibt den simulierten sofort.
+      var startFakeProgress = function (onTick) {
+        var pct = 0;
+        var timer = setInterval(function () {
+          var step = pct < 60 ? 9 : pct < 85 ? 4 : 1;
+          pct = Math.min(pct + step, 92);
+          onTick(pct);
+        }, 120);
+        return function stop() { clearInterval(timer); };
+      };
+
       var resetSlot = function (slotEl, index) {
         slots[index].result = null;
         slots[index].promise = null;
@@ -1529,16 +1544,24 @@
           thumb.src = URL.createObjectURL(file);
           slotEl.insertBefore(thumb, slotEl.firstChild);
 
+          var shownPct = 0;
+          var setPct = function (pct) {
+            if (pct <= shownPct) return; // nie rückwärts zählen
+            shownPct = pct;
+            if (textEl) textEl.textContent = pct + ' %';
+          };
+          var stopFakeProgress = startFakeProgress(setPct);
+
           var promise = createUploadSession(file).then(function (session) {
-            return putFileDirect(session.uploadUrl, file, function (pct) {
-              if (textEl) textEl.textContent = pct + ' %';
-            }).then(function () {
+            return putFileDirect(session.uploadUrl, file, setPct).then(function () {
+              stopFakeProgress();
               slots[index].result = { name: file.name, type: file.type, downloadUrl: session.downloadUrl };
               slotEl.classList.remove('is-uploading');
               slotEl.classList.add('is-done');
               if (textEl) textEl.textContent = 'Hochgeladen';
             });
           }).catch(function (err) {
+            stopFakeProgress();
             slots[index].result = null;
             slotEl.classList.remove('is-uploading');
             slotEl.classList.add('is-error');

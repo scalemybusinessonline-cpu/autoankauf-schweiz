@@ -275,8 +275,7 @@
     input[type="email"],
     input[type="tel"],
     textarea,
-    select,
-    .file-upload {
+    select {
       width: 100%;
       background: rgba(255, 255, 255, 0.55);
       border: 1px solid rgba(255, 255, 255, 0.6);
@@ -297,20 +296,75 @@
     select { color: #12233f; appearance: none; cursor: pointer; }
     select option { background: #fff; color: #1a1a2e; }
     textarea { resize: none; height: 72px; }
-    .file-upload {
+    .upload-block { margin-top: 10px; }
+    .upload-field-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #12233f; margin-bottom: 2px; }
+    .upload-hint { font-size: 11px; color: #12233f; line-height: 1.4; margin-bottom: 10px; }
+    .upload-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .upload-slot {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1.5px dashed rgba(255, 255, 255, 0.7);
+      border-radius: 10px;
+      color: #12233f;
+      text-align: center;
+      padding: 4px;
+      cursor: pointer;
+      overflow: hidden;
+      box-shadow: 0 4px 14px rgba(18, 35, 63, 0.12);
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .upload-slot:hover { background: rgba(255, 255, 255, 0.68); box-shadow: 0 6px 18px rgba(18, 35, 63, 0.18); }
+    .upload-slot input[type="file"] { display: none; }
+    .upload-slot-num {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: rgba(18, 35, 63, 0.14);
+      color: #12233f;
+      font-size: 9px;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      background: #4073b2;
-      border-color: #4073b2;
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
+      line-height: 1;
     }
-    .file-upload:hover { background: #4B93F5; border-color: #4B93F5; }
-    .file-upload input[type="file"] { display: none; }
-    .file-upload.has-file { background: #12233f; border-color: #12233f; color: #fff; }
+    .upload-slot-icon { width: 16px; height: 16px; flex-shrink: 0; }
+    .upload-slot-text { font-size: 8px; font-weight: 600; line-height: 1.25; word-break: break-word; }
+    .upload-slot-remove {
+      display: none;
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.5);
+      color: #fff;
+      border: none;
+      font-size: 11px;
+      line-height: 1;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 1;
+    }
+    .upload-slot-thumb { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .upload-slot.is-uploading { border-style: solid; border-color: #4073b2; }
+    .upload-slot.is-uploading .upload-slot-text { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.6); position: relative; z-index: 1; }
+    .upload-slot.is-done { border-style: solid; border-color: #12233f; }
+    .upload-slot.is-done .upload-slot-remove,
+    .upload-slot.is-error .upload-slot-remove { display: flex; }
+    .upload-slot.is-error { border-style: solid; border-color: #D32F2F; background: rgba(211, 47, 47, 0.12); }
+    .upload-slot.is-error .upload-slot-text { color: #D32F2F; }
     .hp-field {
       position: absolute;
       left: -9999px;
@@ -734,11 +788,11 @@
       }
       .form-panel input::placeholder,
       .form-panel textarea::placeholder { color: #7288ab; }
-      .file-upload {
-        flex-direction: column;
-        gap: 4px;
-        padding: 12px;
-        text-align: center;
+      .form-panel .upload-field-label { color: #1e4d8f; }
+      .form-panel .upload-hint { color: #4f6a92; }
+      .form-panel .upload-slot {
+        background: rgba(0, 71, 168, 0.06);
+        border-color: rgba(0, 71, 168, 0.25);
       }
       .benefits { padding: 2.75rem 0 2.75rem 1.25rem; }
       .reviews { padding: 2.75rem 0 2.75rem 1.25rem; }
@@ -1025,11 +1079,47 @@
             <textarea name="bemerkungen" placeholder="Bemerkungen (optional)" aria-label="Bemerkungen" rows="2"></textarea>
           </div>
           <div class="row full">
-            <label class="file-upload" id="fileUploadLabel">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <span id="fileUploadText">Bilder auswählen (mehrere möglich)</span>
-              <input type="file" name="bilder" accept="image/*" multiple aria-label="Bilder auswählen">
-            </label>
+            <div class="upload-block">
+            <div class="upload-field-label">Bilder auswählen</div>
+            <div class="upload-hint">Du kannst bis zu 5 Bilder deines Fahrzeugs hochladen. Jedes Bild lädt sofort im Hintergrund hoch.</div>
+            <div class="upload-grid" id="uploadGrid">
+              <label class="upload-slot">
+                <input type="file" accept="image/*" aria-label="Bild 1 hochladen">
+                <span class="upload-slot-num">1</span>
+                <button type="button" class="upload-slot-remove" aria-label="Bild entfernen">×</button>
+                <svg class="upload-slot-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span class="upload-slot-text">Bild hochladen</span>
+              </label>
+              <label class="upload-slot">
+                <input type="file" accept="image/*" aria-label="Bild 2 hochladen">
+                <span class="upload-slot-num">2</span>
+                <button type="button" class="upload-slot-remove" aria-label="Bild entfernen">×</button>
+                <svg class="upload-slot-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span class="upload-slot-text">Bild hochladen</span>
+              </label>
+              <label class="upload-slot">
+                <input type="file" accept="image/*" aria-label="Bild 3 hochladen">
+                <span class="upload-slot-num">3</span>
+                <button type="button" class="upload-slot-remove" aria-label="Bild entfernen">×</button>
+                <svg class="upload-slot-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span class="upload-slot-text">Bild hochladen</span>
+              </label>
+              <label class="upload-slot">
+                <input type="file" accept="image/*" aria-label="Bild 4 hochladen">
+                <span class="upload-slot-num">4</span>
+                <button type="button" class="upload-slot-remove" aria-label="Bild entfernen">×</button>
+                <svg class="upload-slot-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span class="upload-slot-text">Bild hochladen</span>
+              </label>
+              <label class="upload-slot">
+                <input type="file" accept="image/*" aria-label="Bild 5 hochladen">
+                <span class="upload-slot-num">5</span>
+                <button type="button" class="upload-slot-remove" aria-label="Bild entfernen">×</button>
+                <svg class="upload-slot-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span class="upload-slot-text">Bild hochladen</span>
+              </label>
+            </div>
+            </div>
           </div>
 
           <button type="submit" class="btn-submit">
@@ -1361,20 +1451,118 @@
     })();
 
     (function () {
-      var label = document.getElementById('fileUploadLabel');
-      var text = document.getElementById('fileUploadText');
-      var input = label ? label.querySelector('input[type="file"]') : null;
-      if (!input) return;
-      input.addEventListener('change', function () {
-        var count = input.files.length;
-        if (count === 0) {
-          text.textContent = 'Bilder auswählen (mehrere möglich)';
-          label.classList.remove('has-file');
-        } else {
-          text.textContent = count === 1 ? '1 Bild ausgewählt' : count + ' Bilder ausgewählt';
-          label.classList.add('has-file');
+      // Jedes der 5 Bild-Slots lädt sein Bild sofort im Hintergrund zu Cloudflare
+      // R2 hoch (presigned URL vom eigenen /api/presign-Worker), statt erst beim
+      // Absenden des Formulars. So sind die meisten Bilder beim Klick auf
+      // "Offerte kostenlos anfordern" schon fertig — die gefühlte Wartezeit
+      // sinkt, weil der Upload parallel zum Ausfüllen der übrigen Felder läuft.
+      var grid = document.getElementById('uploadGrid');
+      if (!grid) return;
+      var slotEls = Array.prototype.slice.call(grid.querySelectorAll('.upload-slot'));
+
+      // result: {name, type, downloadUrl} sobald fertig; promise: laufender
+      // Upload, der beim Absenden noch abgewartet werden muss, falls offen.
+      var slots = slotEls.map(function () { return { result: null, promise: null }; });
+      window.__offerUploadSlots = slots;
+
+      var createUploadSession = function (file) {
+        var url = '/api/presign'
+          + '?filename=' + encodeURIComponent(file.name)
+          + '&mimeType=' + encodeURIComponent(file.type || 'application/octet-stream');
+        return fetch(url).then(function (res) { return res.json(); }).then(function (data) {
+          if (!data || !data.uploadUrl || !data.downloadUrl) throw new Error('Keine Upload-URL erhalten');
+          return data;
+        });
+      };
+
+      var putFileDirect = function (uploadUrl, file, onProgress) {
+        return new Promise(function (resolve, reject) {
+          var xhr = new XMLHttpRequest();
+          xhr.open('PUT', uploadUrl, true);
+          xhr.upload.addEventListener('progress', function (evt) {
+            if (evt.lengthComputable && onProgress) onProgress(Math.round((evt.loaded / evt.total) * 100));
+          });
+          xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 300) resolve();
+            else reject(new Error('Hochladen fehlgeschlagen (' + file.name + ')'));
+          };
+          xhr.onerror = function () { reject(new Error('Netzwerkfehler beim Hochladen von ' + file.name)); };
+          // Keine zusätzlichen Header setzen — die presigned URL ist ohne
+          // mitsignierte Header ausgestellt, sonst schlägt die Signatur fehl.
+          xhr.send(file);
+        });
+      };
+
+      var resetSlot = function (slotEl, index) {
+        slots[index].result = null;
+        slots[index].promise = null;
+        slotEl.classList.remove('is-uploading', 'is-done', 'is-error');
+        var thumb = slotEl.querySelector('.upload-slot-thumb');
+        if (thumb) thumb.remove();
+        var icon = slotEl.querySelector('.upload-slot-icon');
+        if (icon) icon.style.display = '';
+        var textEl = slotEl.querySelector('.upload-slot-text');
+        if (textEl) textEl.textContent = 'Bild hochladen';
+        var input = slotEl.querySelector('input[type="file"]');
+        if (input) input.value = '';
+      };
+
+      slotEls.forEach(function (slotEl, index) {
+        var input = slotEl.querySelector('input[type="file"]');
+        var removeBtn = slotEl.querySelector('.upload-slot-remove');
+        var textEl = slotEl.querySelector('.upload-slot-text');
+        var icon = slotEl.querySelector('.upload-slot-icon');
+
+        input.addEventListener('change', function () {
+          var file = input.files && input.files[0];
+          if (!file) return;
+
+          slotEl.classList.remove('is-done', 'is-error');
+          slotEl.classList.add('is-uploading');
+          if (icon) icon.style.display = 'none';
+          if (textEl) textEl.textContent = '0 %';
+
+          var oldThumb = slotEl.querySelector('.upload-slot-thumb');
+          if (oldThumb) oldThumb.remove();
+          var thumb = document.createElement('img');
+          thumb.className = 'upload-slot-thumb';
+          thumb.src = URL.createObjectURL(file);
+          slotEl.insertBefore(thumb, slotEl.firstChild);
+
+          var promise = createUploadSession(file).then(function (session) {
+            return putFileDirect(session.uploadUrl, file, function (pct) {
+              if (textEl) textEl.textContent = pct + ' %';
+            }).then(function () {
+              slots[index].result = { name: file.name, type: file.type, downloadUrl: session.downloadUrl };
+              slotEl.classList.remove('is-uploading');
+              slotEl.classList.add('is-done');
+              if (textEl) textEl.textContent = 'Hochgeladen';
+            });
+          }).catch(function (err) {
+            slots[index].result = null;
+            slotEl.classList.remove('is-uploading');
+            slotEl.classList.add('is-error');
+            if (textEl) textEl.textContent = 'Fehler – nochmal';
+            throw err;
+          });
+
+          // Fehler ist im Slot bereits sichtbar gemacht — das Sammel-Promise
+          // beim Absenden soll deswegen nicht die ganze Anfrage blockieren.
+          slots[index].promise = promise.catch(function () {});
+        });
+
+        if (removeBtn) {
+          removeBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            resetSlot(slotEl, index);
+          });
         }
       });
+
+      window.__resetOfferUploads = function () {
+        slotEls.forEach(function (slotEl, index) { resetSlot(slotEl, index); });
+      };
     })();
 
     (function () {
@@ -1410,7 +1598,6 @@
       var successEl = form.querySelector('.form-success');
       var errorBannerEl = form.querySelector('.form-error-banner');
       var errorBannerDefaultText = errorBannerEl ? errorBannerEl.textContent : '';
-      var fileInput = form.querySelector('input[name="bilder"]');
       var formExpand = form.querySelector('.form-expand');
       var submitting = false;
 
@@ -1482,138 +1669,25 @@
           if (submitBtnLabel) submitBtnLabel.textContent = 'Wird gesendet …';
         }
 
-        var files = (fileInput && fileInput.files) ? Array.prototype.slice.call(fileInput.files) : [];
-        // Unter INLINE_THRESHOLD_BYTES: Bilder wie bisher als Base64 inline im
-        // Formular-POST (Apps-Script-Web-Apps haben ein POST-Body-Limit von
-        // ~50 MB, daher bleibt dieser Weg klein gehalten). Darüber (bis
-        // MAX_TOTAL_BYTES): Bilder werden direkt zu Google Drive hochgeladen
-        // (Resumable-Upload-Session, siehe Code.gs) und umgehen damit das
-        // POST-Body-Limit — nur die Drive-Datei-IDs kommen dann mit ins Formular.
-        var INLINE_THRESHOLD_BYTES = 30 * 1024 * 1024; // ~30 MB Rohgrösse ≈ 40 MB nach Base64
-        var MAX_TOTAL_BYTES = 300 * 1024 * 1024; // absolute Obergrenze pro Anfrage
-        var totalBytes = files.reduce(function (sum, f) { return sum + f.size; }, 0);
+        // Die Bilder laufen schon seit der Auswahl im Hintergrund zu R2 hoch
+        // (siehe Upload-Slot-Skript oben) — hier nur noch abwarten, falls
+        // einzelne Uploads noch nicht fertig sind, dann Ergebnisse einsammeln.
+        var uploadSlots = window.__offerUploadSlots || [];
+        var pendingPromises = uploadSlots.map(function (s) { return s.promise; }).filter(Boolean);
 
-        if (totalBytes > MAX_TOTAL_BYTES) {
-          submitting = false;
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.classList.remove('is-loading');
-            if (submitBtnLabel) submitBtnLabel.textContent = submitBtnDefaultText;
-          }
-          if (errorBannerEl) {
-            errorBannerEl.textContent = 'Die Bilder sind zusammen zu gross (max. 300 MB). Bitte weniger oder kleinere Bilder auswählen.';
-            errorBannerEl.style.display = 'block';
-          }
-          return false;
-        }
-
-        var abortSubmit = function (message) {
-          submitting = false;
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.classList.remove('is-loading');
-            if (submitBtnLabel) submitBtnLabel.textContent = submitBtnDefaultText;
-          }
-          if (errorBannerEl) {
-            errorBannerEl.textContent = message;
-            errorBannerEl.style.display = 'block';
-          }
+        var finalizeAndSubmit = function () {
+          var bilderR2Field = form.querySelector('input[name="bilder_r2"]');
+          var uploaded = uploadSlots.map(function (s) { return s.result; }).filter(Boolean);
+          if (bilderR2Field) bilderR2Field.value = JSON.stringify(uploaded);
+          if (submitBtnLabel) submitBtnLabel.textContent = 'Wird gesendet …';
+          form.submit();
         };
 
-        if (totalBytes <= INLINE_THRESHOLD_BYTES) {
-          var readFileAsDataURL = function (file) {
-            return new Promise(function (resolve) {
-              var reader = new FileReader();
-              reader.onload = function () { resolve({ name: file.name, type: file.type, data: reader.result }); };
-              reader.onerror = function () { resolve(null); }; // einzelnes fehlerhaftes Bild soll den Rest nicht blockieren
-              reader.readAsDataURL(file);
-            });
-          };
-
-          Promise.all(files.map(readFileAsDataURL)).then(function (results) {
-            var bilderDataField = form.querySelector('input[name="bilder_data"]');
-            var payload = results
-              .filter(function (r) { return r !== null; })
-              .map(function (r) {
-                return { name: r.name, type: r.type, data: r.data.split(',')[1] || '' };
-              });
-            if (bilderDataField) bilderDataField.value = JSON.stringify(payload);
-
-            // Rohe Datei-Auswahl nicht zusätzlich mitsenden — Inhalt steckt jetzt in bilder_data
-            if (fileInput) fileInput.disabled = true;
-
-            form.submit();
-          });
+        if (pendingPromises.length > 0) {
+          if (submitBtnLabel) submitBtnLabel.textContent = 'Bilder werden hochgeladen …';
+          Promise.all(pendingPromises).then(finalizeAndSubmit);
         } else {
-          // Grosser Upload (>30 MB): jede Datei direkt zu Cloudflare R2 hochladen
-          // (presigned URL vom eigenen /api/presign-Worker, same-origin — kein
-          // CORS-Problem beim Anfragen der URL), Gesamtfortschritt dabei im
-          // Submit-Button anzeigen.
-          var uploadedBytes = files.map(function () { return 0; });
-          var updateProgress = function () {
-            var sent = uploadedBytes.reduce(function (sum, b) { return sum + b; }, 0);
-            var pct = totalBytes > 0 ? Math.round((sent / totalBytes) * 100) : 0;
-            if (submitBtnLabel) submitBtnLabel.textContent = 'Wird hochgeladen … ' + pct + ' %';
-          };
-
-          var createUploadSession = function (file) {
-            var url = '/api/presign'
-              + '?filename=' + encodeURIComponent(file.name)
-              + '&mimeType=' + encodeURIComponent(file.type || 'application/octet-stream');
-            return fetch(url).then(function (res) { return res.json(); }).then(function (data) {
-              if (!data || !data.uploadUrl || !data.downloadUrl) throw new Error('Keine Upload-URL erhalten');
-              return data;
-            });
-          };
-
-          var putFileDirect = function (uploadUrl, file, index) {
-            return new Promise(function (resolve, reject) {
-              var xhr = new XMLHttpRequest();
-              xhr.open('PUT', uploadUrl, true);
-              xhr.upload.addEventListener('progress', function (evt) {
-                if (evt.lengthComputable) {
-                  uploadedBytes[index] = evt.loaded;
-                  updateProgress();
-                }
-              });
-              xhr.onload = function () {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                  uploadedBytes[index] = file.size;
-                  updateProgress();
-                  resolve();
-                } else {
-                  reject(new Error('Hochladen fehlgeschlagen (' + file.name + ')'));
-                }
-              };
-              xhr.onerror = function () { reject(new Error('Netzwerkfehler beim Hochladen von ' + file.name)); };
-              // Keine zusätzlichen Header setzen — die presigned URL ist ohne
-              // mitsignierte Header ausgestellt, sonst schlägt die Signatur fehl.
-              xhr.send(file);
-            });
-          };
-
-          var uploadOne = function (file, index) {
-            return createUploadSession(file).then(function (session) {
-              return putFileDirect(session.uploadUrl, file, index).then(function () {
-                return { name: file.name, type: file.type, downloadUrl: session.downloadUrl };
-              });
-            });
-          };
-
-          if (submitBtnLabel) submitBtnLabel.textContent = 'Wird hochgeladen … 0 %';
-
-          Promise.all(files.map(uploadOne)).then(function (uploaded) {
-            var bilderR2Field = form.querySelector('input[name="bilder_r2"]');
-            if (bilderR2Field) bilderR2Field.value = JSON.stringify(uploaded);
-
-            // Rohe Datei-Auswahl nicht zusätzlich mitsenden — Inhalt liegt jetzt in bilder_r2
-            if (fileInput) fileInput.disabled = true;
-            if (submitBtnLabel) submitBtnLabel.textContent = 'Wird gesendet …';
-
-            form.submit();
-          }).catch(function () {
-            abortSubmit('Der Upload ist fehlgeschlagen. Bitte versuche es erneut oder wähle kleinere Bilder.');
-          });
+          finalizeAndSubmit();
         }
       });
 
@@ -1621,7 +1695,6 @@
         iframe.addEventListener('load', function () {
           if (!submitting) return; // ersten Load beim Seitenaufbau ignorieren
           submitting = false;
-          if (fileInput) fileInput.disabled = false;
           if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.classList.remove('is-loading');
@@ -1629,11 +1702,7 @@
           }
           if (successEl) successEl.style.display = 'block';
           form.reset();
-
-          var uploadLabel = document.getElementById('fileUploadLabel');
-          var uploadText = document.getElementById('fileUploadText');
-          if (uploadLabel) uploadLabel.classList.remove('has-file');
-          if (uploadText) uploadText.textContent = 'Bilder auswählen (mehrere möglich)';
+          if (window.__resetOfferUploads) window.__resetOfferUploads();
         });
       }
     })();

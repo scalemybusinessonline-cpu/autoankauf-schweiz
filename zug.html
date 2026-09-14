@@ -530,6 +530,22 @@
     .review-stars { color: #D32F2F; font-size: 13px; letter-spacing: 2px; margin-bottom: 0.5rem; }
     .review-text { font-size: 13px; color: #555; line-height: 1.65; margin-bottom: 0.75rem; }
     .review-author { font-size: 12px; font-weight: 600; color: #0047A8; }
+    .reviews-actions { display: flex; justify-content: center; gap: 0.9rem; flex-wrap: wrap; margin-top: 2.5rem; }
+    .btn-review {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 12px 24px;
+      border-radius: 8px;
+      white-space: nowrap;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    .btn-review-secondary { background: #fff; color: #0047A8; border: 1px solid #b9c8e0; }
+    .btn-review-secondary:hover { background: #eef2fa; }
+    .btn-review-primary { background: #D32F2F; color: #fff; }
+    .btn-review-primary:hover { opacity: 0.88; }
 
     /* ── CTA STRIP ── */
     .cta-wrap { background: #fff; padding: 1.5rem 2rem; padding-bottom: 120px; }
@@ -761,6 +777,8 @@
       }
       .reviews-grid::-webkit-scrollbar { display: none; }
       .review-card { flex: 0 0 78%; scroll-snap-align: start; }
+      .reviews-actions { padding: 0 1.25rem; }
+      .btn-review { flex: 1 1 auto; }
       .cta-wrap { padding: 1rem; }
       .cta-strip { flex-direction: column; text-align: center; padding: 2rem 1.5rem; border-radius: 20px; }
       .footer-bottom { grid-template-columns: 1fr; text-align: center; }
@@ -934,7 +952,7 @@
             <span class="gr-stars-bg">★★★★★</span>
             <span class="gr-stars-fg">★★★★★</span>
           </span>
-          <span class="gr-count">Bewertungen (82)</span>
+          <span class="gr-count">Bewertungen (83)</span>
         </a>
       </div>
     </div>
@@ -1176,6 +1194,10 @@
         <div class="review-author">Gafner Marianne</div>
       </div>
     </div>
+    <div class="reviews-actions">
+      <a class="btn-review btn-review-secondary" href="https://www.google.com/maps?cid=6217927642790826669" target="_blank" rel="noopener">Alle Bewertungen ansehen</a>
+      <a class="btn-review btn-review-primary" href="https://search.google.com/local/writereview?placeid=ChIJhf5rIYYLkEcRrRKhQz-ESlY" target="_blank" rel="noopener">Bewertung abgeben</a>
+    </div>
   </section>
 
   </main>
@@ -1321,6 +1343,20 @@
           e.preventDefault();
           window.scrollTo({ top: 0, behavior: 'smooth' });
         });
+      });
+    })();
+
+    (function () {
+      // Logo führt immer zur Startseite ganz nach oben. Ist man bereits auf der
+      // Startseite, wird nur sanft nach oben gescrollt statt die Seite neu zu laden.
+      var logo = document.querySelector('.logo');
+      if (!logo) return;
+      logo.addEventListener('click', function (e) {
+        var path = window.location.pathname.replace(/\/index\.html$/, '/');
+        if (path === '/' || path === '') {
+          e.preventDefault();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       });
     })();
 

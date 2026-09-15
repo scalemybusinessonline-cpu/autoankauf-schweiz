@@ -2,8 +2,10 @@ import { AwsClient } from 'aws4fetch';
 
 // Presigned URLs bleiben lange genug gültig für langsame Mobilfunk-Uploads
 // grosser Dateien (PUT) und für die Zeit zwischen Upload-Abschluss und
-// Formular-Absenden, bis Apps Script die Datei per GET abholt.
-var URL_EXPIRY_SECONDS = 3600;
+// Formular-Absenden, bis Apps Script die Datei per GET abholt. 24h statt
+// vorher 1h, nachdem eine Anfrage ohne Bilder ankam, deren Download-URL
+// vermutlich schon abgelaufen war, bevor Apps Script sie abholen konnte.
+var URL_EXPIRY_SECONDS = 24 * 60 * 60;
 
 // Einfache Missbrauchsbremse: nur Bild-/Video-Uploads erlauben. Ersetzt keine
 // echte Bot-Abwehr (siehe Plan-Einschränkungen), reicht aber für das aktuelle

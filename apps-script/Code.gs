@@ -173,7 +173,32 @@ function saveToDrive(p, nextNumber) {
  * gültiger presigned Download-URL. Schlägt eine einzelne Datei fehl (z. B.
  * abgelaufene URL), wird das geloggt und nur diese Datei übersprungen —
  * kein harter Abbruch der ganzen Anfrage.
+ *
+ * UrlFetchApp wirft dabei gelegentlich einen reinen Verbindungsfehler
+ * ("Unexpected error") gegen R2, obwohl dieselbe URL über jeden anderen
+ * Client sofort funktioniert — beobachtet bei mehreren Bildern in derselben
+ * Anfrage, während einzelne Bilder zuverlässig klappten. Sieht nach einer
+ * kurzen, transienten Störung zwischen Apps Script und Cloudflare aus,
+ * daher hier ein einfacher Retry mit kurzer Pause statt eines harten Abbruchs.
  */
+var R2_FETCH_MAX_ATTEMPTS = 3;
+var R2_FETCH_RETRY_DELAY_MS = 800;
+
+function fetchR2WithRetry(url) {
+  var lastError = null;
+  for (var attempt = 1; attempt <= R2_FETCH_MAX_ATTEMPTS; attempt++) {
+    try {
+      return UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    } catch (err) {
+      lastError = err;
+      if (attempt < R2_FETCH_MAX_ATTEMPTS) {
+        Utilities.sleep(R2_FETCH_RETRY_DELAY_MS);
+      }
+    }
+  }
+  throw lastError;
+}
+
 function resolveR2Attachments(bilderR2Json) {
   if (!bilderR2Json) return [];
   var items;
@@ -188,7 +213,7 @@ function resolveR2Attachments(bilderR2Json) {
   items.forEach(function (item) {
     if (!item || !item.downloadUrl) return;
     try {
-      var response = UrlFetchApp.fetch(item.downloadUrl, { muteHttpExceptions: true });
+      var response = fetchR2WithRetry(item.downloadUrl);
       if (response.getResponseCode() !== 200) {
         Logger.log('R2-Download fehlgeschlagen (' + item.name + '): HTTP ' + response.getResponseCode());
         return;
@@ -198,7 +223,7 @@ function resolveR2Attachments(bilderR2Json) {
       if (item.type) blob.setContentType(item.type);
       blobs.push(blob);
     } catch (err) {
-      Logger.log('R2-Download fehlgeschlagen (' + item.name + '): ' + err);
+      Logger.log('R2-Download fehlgeschlagen nach ' + R2_FETCH_MAX_ATTEMPTS + ' Versuchen (' + item.name + '): ' + err);
     }
   });
   return blobs;

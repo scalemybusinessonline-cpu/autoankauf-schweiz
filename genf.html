@@ -794,6 +794,12 @@
         background: rgba(0, 71, 168, 0.06);
         border-color: rgba(0, 71, 168, 0.25);
       }
+      /* Feste Quadrat-Höhe (aspect-ratio) reicht auf schmalen Screens nicht für
+         zwei Textzeilen — "hochladen" wurde vom overflow:hidden abgeschnitten
+         und nur "Bild" blieb sichtbar. Höhe hier stattdessen am Inhalt
+         ausrichten lassen. */
+      .upload-slot { aspect-ratio: auto; min-height: 76px; }
+      .upload-slot-text { font-size: 9px; }
       .benefits { padding: 2.75rem 0 2.75rem 1.25rem; }
       .reviews { padding: 2.75rem 0 2.75rem 1.25rem; }
       .section-head { margin-bottom: 1.5rem; padding: 0 1.25rem; }

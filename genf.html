@@ -1586,6 +1586,18 @@
       window.__resetOfferUploads = function () {
         slotEls.forEach(function (slotEl, index) { resetSlot(slotEl, index); });
       };
+
+      // Warnt vor versehentlichem Verlassen/Neuladen, solange Bilder hochgeladen
+      // sind: ein Reload verwirft die Datei-Auswahl unwiderruflich (der Browser
+      // kann sie nicht wiederherstellen), während Text-Felder oft automatisch
+      // wiederhergestellt werden — das Formular wirkt danach fälschlich
+      // vollständig ausgefüllt, obwohl die Bilder beim Absenden fehlen würden.
+      window.addEventListener('beforeunload', function (e) {
+        var hasUploads = slots.some(function (s) { return s.result || s.promise; });
+        if (!hasUploads) return;
+        e.preventDefault();
+        e.returnValue = '';
+      });
     })();
 
     (function () {
